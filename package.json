@@ -1,51 +1,110 @@
-{
-    "name": "ws3-fca",
-    "version": "2.0.1",
-    "description": "A node.js package for automating Facebook Messenger bot, and is one of the most advanced next-generation Facebook Chat API (FCA) by @NethWs3Dev (Kenneth Aceberos)",
-    "main": "index.js",
-    "scripts": {
-        "start": "node index.js"
+[
+    {
+        "key": "datr",
+        "value": "IY9qaCjbtAWzx_ZgviidPbvu",
+        "domain": "facebook.com",
+        "path": "/",
+        "hostOnly": false,
+        "creation": "2025-07-06T17:15:45.050Z",
+        "lastAccessed": "2025-07-06T17:15:45.050Z"
     },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/NethWs3Dev/ws3-fca"
+    {
+        "key": "sb",
+        "value": "IY9qaAVhOKNT6kzwxiZEfIsi",
+        "domain": "facebook.com",
+        "path": "/",
+        "hostOnly": false,
+        "creation": "2025-07-06T17:15:45.050Z",
+        "lastAccessed": "2025-07-06T17:15:45.050Z"
     },
-    "social": {
-        "github": "https://github.com/NethWs3Dev",
-        "facebook": "https://www.facebook.com/kennethaceberos"
+    {
+        "key": "m_pixel_ratio",
+        "value": "4.714255332946777",
+        "domain": "facebook.com",
+        "path": "/",
+        "hostOnly": false,
+        "creation": "2025-07-06T17:15:45.050Z",
+        "lastAccessed": "2025-07-06T17:15:45.050Z"
     },
-    "author": "Kenneth Aceberos",
-    "license": "MIT",
-    "bugs": {
-        "url": ""
+    {
+        "key": "wd",
+        "value": "370x820",
+        "domain": "facebook.com",
+        "path": "/",
+        "hostOnly": false,
+        "creation": "2025-07-06T17:15:45.050Z",
+        "lastAccessed": "2025-07-06T17:15:45.050Z"
     },
-    "homepage": "",
-    "keywords": [
-        "facebook",
-        "chat",
-        "api",
-        "fca",
-        "ws3",
-        "ws3-chat-api",
-        "ws3-fca"
-    ],
-    "dependencies": {
-        "axios": "^1.6.5",
-        "chalk": "^3.0.0",
-        "cheerio": "^0.22.0",
-        "gradient-string": "^1.1.0",
-        "https-proxy-agent": "^4.0.0",
-        "mqtt": "^3.0.0",
-        "node-cron": "^3.0.3",
-        "request": "^2.88.2",
-        "websocket-stream": "^5.5.0"
+    {
+        "key": "c_user",
+        "value": "100011395708364",
+        "domain": "facebook.com",
+        "path": "/",
+        "hostOnly": false,
+        "creation": "2025-07-06T17:15:45.050Z",
+        "lastAccessed": "2025-07-06T17:15:45.050Z"
     },
-    "devDependencies": {
-        "eslint": "^7.5.0",
-        "mocha": "^7.0.1",
-        "prettier": "^1.11.1"
+    {
+        "key": "xs",
+        "value": "50%3AgxPmKalyRdul2A%3A2%3A1751814002%3A-1%3A-1",
+        "domain": "facebook.com",
+        "path": "/",
+        "hostOnly": false,
+        "creation": "2025-07-06T17:15:45.050Z",
+        "lastAccessed": "2025-07-06T17:15:45.050Z"
     },
-    "engines": {
-        "node": ">=10.x"
+    {
+        "key": "locale",
+        "value": "en_US",
+        "domain": "facebook.com",
+        "path": "/",
+        "hostOnly": false,
+        "creation": "2025-07-06T17:15:45.050Z",
+        "lastAccessed": "2025-07-06T17:15:45.050Z"
+    },
+    {
+        "key": "pas",
+        "value": "100011395708364%3AKe86bGqkuH",
+        "domain": "facebook.com",
+        "path": "/",
+        "hostOnly": false,
+        "creation": "2025-07-06T17:15:45.050Z",
+        "lastAccessed": "2025-07-06T17:15:45.050Z"
+    },
+    {
+        "key": "vpd",
+        "value": "v1%3B472x255x4.714255332946777",
+        "domain": "facebook.com",
+        "path": "/",
+        "hostOnly": false,
+        "creation": "2025-07-06T17:15:45.050Z",
+        "lastAccessed": "2025-07-06T17:15:45.050Z"
+    },
+    {
+        "key": "fr",
+        "value": "0IxZ2gbKT18Bt1wYK.AWehWpTZ4jctmCZRRKhhn1r8RU0qOKLV0qKuYO10efLLp1MxF4U.Boao8h..AAA.0.0.Boaq86.AWeAZUPGsZj_T0h1e-44qyeGmc0",
+        "domain": "facebook.com",
+        "path": "/",
+        "hostOnly": false,
+        "creation": "2025-07-06T17:15:45.050Z",
+        "lastAccessed": "2025-07-06T17:15:45.050Z"
+    },
+    {
+        "key": "wl_cbv",
+        "value": "v2%3Bclient_version%3A2861%3Btimestamp%3A1751822138",
+        "domain": "facebook.com",
+        "path": "/",
+        "hostOnly": false,
+        "creation": "2025-07-06T17:15:45.050Z",
+        "lastAccessed": "2025-07-06T17:15:45.050Z"
+    },
+    {
+        "key": "fbl_st",
+        "value": "100439678%3BT%3A29197035",
+        "domain": "facebook.com",
+        "path": "/",
+        "hostOnly": false,
+        "creation": "2025-07-06T17:15:45.050Z",
+        "lastAccessed": "2025-07-06T17:15:45.050Z"
     }
-}
+]
