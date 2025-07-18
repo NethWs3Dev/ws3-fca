@@ -4,8 +4,7 @@
 * @rewrittenBy Isai Ivanov
 */
 //fixed march 30
-require('module-alias/register');
-const utils = require("@utils");
+const utils = require('../../../utils');
 
 function canBeCalled(func) {
     try {
