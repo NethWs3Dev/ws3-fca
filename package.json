@@ -1,15 +1,82 @@
 {
-  "name": "nodejs",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@types/node": "^22.13.11"
-  }
+    "name": "ws3-fca",
+    "version": "3.0.0",
+    "module": "commonjs",
+    "types": "core/types/index.d.ts",
+    "description": "A node.js package for automating Facebook Messenger bot, and is one of the most advanced next-generation Facebook Chat API (FCA) by @NethWs3Dev & @ExocoreCommunity",
+    "main": "module/index",
+    "scripts": {
+        "test": "echo Willdan Suldyir"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/NethWs3Dev/ws3-fca"
+    },
+    },
+    "author": [
+        "Choru Official",
+        "Kenneth Aceberos",
+        "Jonell Magallanes"
+    ],
+    "community": "Exocore",
+    "license": "MIT",
+    "bugs": {
+        "url": ""
+    },
+    "homepage": "",
+    "keywords": [
+        "facebook",
+        "chat",
+        "api",
+        "fca",
+        "ws3",
+        "ws3-chat-api",
+        "ws3-fca",
+        "exocore",
+        "nextgen"
+    ],
+    "dependencies": {
+        "axios": "^1.9.0",
+        "axios-cookiejar-support": "^4.0.7",
+        "chalk": "^3.0.0",
+        "cheerio": "^0.22.0",
+        "deepdash": "^5.3.9",
+        "express": "^4.19.2",
+        "form-data": "^4.0.3",
+        "freeport": "^1.0.5",
+        "gradient-string": "^1.1.0",
+        "https-proxy-agent": "^4.0.0",
+        "lodash": "^4.17.21",
+        "module-alias": "^2.2.3",
+        "mqtt": "^3.0.0",
+        "node-cron": "^3.0.3",
+        "primus": "^8.0.9",
+        "primus-emitter": "^3.1.1",
+        "proxy-chain": "^2.5.3",
+        "puppeteer-core": "^15.3.0",
+        "request": "^2.88.2",
+        "tough-cookie": "^5.1.2",
+        "undici": "^5.29.0",
+        "websocket-stream": "^5.5.0"
+    },
+    "devDependencies": {
+        "@types/axios": "^0.9.36",
+        "@types/express": "^4.17.21",
+        "@types/form-data": "^2.2.1",
+        "@types/node": "^22.13.11",
+        "@types/tough-cookie": "^4.0.5",
+        "eslint": "^7.5.0",
+        "mocha": "^7.0.1",
+        "prettier": "^1.11.1",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.4.5"
+    },
+    "_moduleAliases": {
+        "@core": "src/core/client.js",
+        "@utils": "src/utils/index.js",
+        "@apis": "src/deltas/apis"
+    },
+    "engines": {
+        "node": ">=22.x"
+    }
 }
