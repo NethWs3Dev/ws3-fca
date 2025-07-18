@@ -1,8 +1,7 @@
 // @ChoruOfficial
 "use strict";
 
-require('module-alias/register');
-const utils = require("@utils");
+const utils = require('../../../utils');
 
 /**
  * Formats an event reminder object from a GraphQL response.
