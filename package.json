@@ -52,7 +52,8 @@
     "request": "^2.88.2",
     "tough-cookie": "^5.1.2",
     "undici": "^5.29.0",
-    "websocket-stream": "^5.5.0"
+    "websocket-stream": "^5.5.0",
+    "jsonpath-plus": "^10.3.0"
   },
   "devDependencies": {
     "@types/axios": "^0.9.36",
