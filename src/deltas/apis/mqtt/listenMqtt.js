@@ -19,29 +19,79 @@ const topics = [
 
 /**
  * Checks for and executes pending message edits.
+ *
  * @param {object} api The full API object.
- * @param {object} message The formatted message object from the delta.
+ * @param {object} deltaMessageMetadata The messageMetadata from the received delta.
+ * @param {string} confirmedMessageID The messageID confirmed by the delta.
+ * @param {object} ctx The context object (needed for userID/pageID check within this function).
  */
-async function handlePendingEdits(api, message) {
-    const otid = message.offlineThreadingId;
-    if (api.pendingEdits && api.pendingEdits.has(otid)) {
-        const editData = api.pendingEdits.get(otid);
-        const messageID = message.messageID;
-        api.pendingEdits.delete(otid);
+async function handlePendingEdits(api, deltaMessageMetadata, confirmedMessageID, ctx) {
+    const delta_otid = deltaMessageMetadata.offlineThreadingId;
+    const delta_replySourceId = deltaMessageMetadata.replySourceId;
+    const sender_actorFbId = deltaMessageMetadata.actorFbId;
 
-        for (const edit of editData.edits) {
-            const [newText, delay] = edit;
-            await new Promise(resolve => setTimeout(resolve, delay));
-            try {
-                api.editMessage(newText, messageID);
-            } catch (e) {
-                utils.error(`Failed to edit message ${messageID}:`, e);
-                break;
+    let editData = null;
+    let keyFound = null;
+
+    if (api.pendingEdits.has(delta_otid)) {
+        editData = api.pendingEdits.get(delta_otid);
+        keyFound = delta_otid;
+    }
+
+    if (!editData && delta_replySourceId) {
+        const replyKey = `reply_${delta_replySourceId}`;
+        if (api.pendingEdits.has(replyKey)) {
+            editData = api.pendingEdits.get(replyKey);
+            keyFound = replyKey;
+
+            if (editData && keyFound !== delta_otid) {
+                api.pendingEdits.set(delta_otid, editData);
+                editData.originalOtid = delta_otid;
+                api.pendingEdits.delete(keyFound);
+                keyFound = delta_otid;
             }
         }
     }
+
+    const isBotMessageForEdit = (sender_actorFbId == ctx.userID) ||
+                                (ctx.globalOptions.pageID && sender_actorFbId == ctx.globalOptions.pageID);
+
+
+    if (editData) {
+        if (isBotMessageForEdit) {
+            api.pendingEdits.delete(keyFound);
+            if (editData.originalOtid && editData.originalOtid !== keyFound) api.pendingEdits.delete(editData.originalOtid);
+            if (editData.originalReplyId && `reply_${editData.originalReplyId}` !== keyFound) api.pendingEdits.delete(`reply_${editData.originalReplyId}`);
+
+            for (const edit of editData.edits) {
+                const [newText, delayAmount] = edit;
+                await new Promise(resolve => setTimeout(resolve, delayAmount));
+                try {
+                    if (typeof api.editMessage === 'function') {
+                        await api.editMessage(newText, confirmedMessageID);
+                    } else {
+                        utils.error(`[handlePendingEdits] api.editMessage is not a function. Cannot execute edit.`);
+                    }
+                } catch (e) {
+                    utils.error(`[handlePendingEdits] Failed to execute edit for message ${confirmedMessageID}:`, e);
+                    break;
+                }
+            }
+        } else {
+            // No action: Found edit data, but message is not from the bot.
+        }
+    } else {
+        // No action: No pending edits found.
+    }
 }
 
+/**
+ * Marks a message as read in the given thread.
+ *
+ * @param {object} ctx The context object.
+ * @param {object} api The full API object.
+ * @param {string} threadID The ID of the thread to mark as read.
+ */
 function markAsRead(ctx, api, threadID) {
     if (ctx.globalOptions.autoMarkRead && threadID) {
         api.markAsRead(threadID, (err) => {
@@ -50,6 +100,14 @@ function markAsRead(ctx, api, threadID) {
     }
 }
 
+/**
+ * Listens for MQTT messages from Facebook's chat servers.
+ *
+ * @param {object} defaultFuncs Default API functions.
+ * @param {object} api The full API object.
+ * @param {object} ctx The context object.
+ * @param {function} globalCallback The global callback function for emitted events.
+ */
 function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
     const chatOn = ctx.globalOptions.online;
     const foreground = false;
@@ -57,10 +115,10 @@ function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
     const cid = ctx.clientID;
     const username = {
         u: ctx.userID, s: sessionID, chat_on: chatOn, fg: foreground, d: cid, ct: 'websocket',
-        aid: ctx.appID, 
+        aid: ctx.appID,
         mqtt_sid: '', cp: 3, ecp: 10, st: [], pm: [],
         dc: '', no_auto_fg: true, gas: null, pack: [], a: ctx.globalOptions.userAgent,
-};
+    };
     const cookies = ctx.jar.getCookiesSync('https://www.facebook.com').join('; ');
     let host;
     const domain = "wss://edge-chat.messenger.com/chat";
@@ -119,11 +177,11 @@ function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
                     }
                 });
             }
-        }, 50000); 
+        }, 50000);
     }
 
     const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-    
+
     mqttClient.on('message', (topic, message, _packet) => {
         try {
             const jsonMessage = JSON.parse(message.toString());
@@ -136,29 +194,11 @@ function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
                 if (jsonMessage.deltas) {
                     for (const delta of jsonMessage.deltas) {
                         if (delta.class === "NewMessage") {
-                            const isBot = delta.messageMetadata.actorFbId == ctx.userID;
-                            const offlineThreadingId = delta.messageMetadata.offlineThreadingId;
-                            
-                            if (isBot && api.pendingEdits.has(offlineThreadingId)) {
-                                const pendingEditData = api.pendingEdits.get(offlineThreadingId);
-                                const messageID = delta.messageMetadata.messageId;
+                            const messageID = delta.messageMetadata.messageId;
 
-                                (async () => {
-                                    try {
-                                        for (const [newText, delayAmount] of pendingEditData.edits) {
-                                            await delay(delayAmount);
-                                            api.editMessage(newText, messageID);
-                                        }
-                                        api.pendingEdits.delete(offlineThreadingId);
-                                    } catch (e) {
-                                        utils.error("Sequential edit failed in listenMqtt", e);
-                                    }
-                                })();
-                                
-                                continue; 
-                            }
+                            handlePendingEdits(api, delta.messageMetadata, messageID, ctx);
                         }
-                        
+
                         parseDelta(defaultFuncs, api, ctx, globalCallback, { delta });
                     }
                 }
@@ -177,8 +217,22 @@ function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
     });
 }
 
+/**
+ * The main module function for listening to MQTT events.
+ *
+ * @param {object} defaultFuncs Default API functions.
+ * @param {object} api The full API object.
+ * @param {object} ctx The context object.
+ * @returns {function(callback: Function): EventEmitter} An EventEmitter for message events.
+ */
 module.exports = function (defaultFuncs, api, ctx) {
     let globalCallback = () => { };
+
+    /**
+     * Retrieves the sequence ID for MQTT listening.
+     *
+     * @returns {Promise<void>}
+     */
     getSeqID = async () => {
         try {
             form = { "queries": JSON.stringify({ "o0": { "doc_id": "3336396659757871", "query_params": { "limit": 1, "before": null, "tags": ["INBOX"], "includeDeliveryReceipts": false, "includeSeqID": true } } }) };
@@ -210,9 +264,8 @@ module.exports = function (defaultFuncs, api, ctx) {
             if (error) return msgEmitter.emit("error", error);
             if (message.type === "message" || message.type === "message_reply") {
                 markAsRead(ctx, api, message.threadID);
-                handlePendingEdits(api, message);
-            }
-            
+                  }
+
             msgEmitter.emit("message", message);
         };
         if (typeof callback === 'function') globalCallback = callback;
