@@ -1,5 +1,7 @@
 # 🚘 ws3-fca
 
+![Image](wiegine.png)
+
 **ws3-fca** is a fully refactored Facebook Chat API (FCA) client built for **reliable**, **real-time**, and **modular** interaction with Facebook Messenger. Designed with modern bot development in mind, it offers full control over Messenger automation through a clean, stable interface.
 
 ---
@@ -11,9 +13,9 @@ Full documentation and advanced examples:
 
 If you encounter issues or want to give feedback, feel free to message us via Facebook:
 
-* [@Johnsteve Costaños](https://www.facebook.com/share/1BxnMGH5Sa/)
-* [@Jonell Magallanes 󱢏](https://www.facebook.com/share/18Q7hsMeV9/)
-* [@Kenneth Aceberos](https://www.facebook.com/share/16cNoyQM8o/)
+* [@Kenneth Aceberos](https://www.facebook.com/Neth.Aceb07/)
+* [@Johnsteve Costaños](https://www.facebook.com/johnstevecostanos2025/)
+* [@Jonell Magallanes 󱢏](https://www.facebook.com/ccprojectsjonell10/)
 
 ---
 
@@ -79,7 +81,7 @@ npm install ws3-fca
 ### 1. Generate `appstate.json`
 
 This file contains your Facebook session cookies.
-Use a browser extension (e.g. "EditThisCookie") to export cookies after logging in, and save them in this format:
+Use a browser extension (e.g. "C3C FbState", "CookieEditor") to export cookies after logging in, and save them in this format:
 
 ```json
 [
@@ -89,6 +91,8 @@ Use a browser extension (e.g. "EditThisCookie") to export cookies after logging 
   }
 ]
 ```
+
+If you don't know how to get cookie, you can follow this tutorial **[here](https://appstate-tutorial-ws3.pages.dev)**.
 
 Place this file in the root directory as `appstate.json`.
 
@@ -160,8 +164,8 @@ login(credentials, {
 
 ## 🙌 Credits
 
+* 🔧 **@NethWs3Dev (Kenneth Aceberos)** – Main developer, equal maintainer, feature and patch contributions.
 * 💧 **@ChoruOfficial** – Lead developer, refactor of original FCA code.
-* 🔧 **@Kenneth Aceberos** – Equal maintainer, feature and patch contributions.
 * 🔮 **@CommunityExocore** – Foundational core design and architecture.
 
 > Copyright (c) 2015
