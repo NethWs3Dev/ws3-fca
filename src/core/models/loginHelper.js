@@ -116,6 +116,16 @@ async function loginHelper(credentials, globalOptions, callback, setOptionsFunc,
             if (fs.existsSync(listenPath)) {
                 api['listen'] = require(listenPath)(defaultFuncs, api, ctx);
             }
+            
+            // listenMqtt added sir
+            if (api.listen){
+                api.listenMqtt = api.listen;
+            }
+            
+            // sendMessage added sir
+            if (api.sendMessageMqtt){
+                api.sendMessage = api.sendMessageMqtt;
+            }
         };
 
         loadApiModules();
