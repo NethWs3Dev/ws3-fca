@@ -47,7 +47,6 @@
     "gradient-string": "^1.1.0",
     "https-proxy-agent": "^4.0.0",
     "lodash": "^4.17.21",
-    "module-alias": "^2.2.3",
     "mqtt": "^3.0.0",
     "node-cron": "^3.0.3",
     "request": "^2.88.2",
@@ -66,11 +65,6 @@
     "prettier": "^1.11.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
-  },
-  "_moduleAliases": {
-    "@core": "src/core/client.js",
-    "@utils": "src/utils/index.js",
-    "@apis": "src/deltas/apis"
   },
   "engines": {
     "node": ">=22.x"
