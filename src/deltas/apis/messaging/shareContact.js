@@ -1,8 +1,7 @@
 /* eslint-disable linebreak-style */
 "use strict";
 
-require('module-alias/register');
-const utils = require("@utils");
+const utils = require('../../../utils');
 
 /**
  * @module shareContact
