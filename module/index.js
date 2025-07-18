@@ -1,6 +1,5 @@
 "use strict";
 
-require('module-alias/register');
-const { login } = require('@core');
+const { login } = require('../src/core/client');
 
 module.exports = { login };
