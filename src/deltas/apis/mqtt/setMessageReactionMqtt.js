@@ -1,8 +1,7 @@
 // @ChoruOfficial
 'use strict';
 
-require('module-alias/register');
-const utils = require("@utils");
+const utils = require('../../../utils');
 function isCallable(func) {
   try {
     Reflect.apply(func, null, []);
