@@ -1,7 +1,6 @@
 "use strict";
 
-require('module-alias/register');
-const utils = require("@utils");
+const utils = require("../utils");
 const setOptionsModel = require('./models/setOptions');
 const buildAPIModel = require('./models/buildAPI');
 const loginHelperModel = require('./models/loginHelper');
