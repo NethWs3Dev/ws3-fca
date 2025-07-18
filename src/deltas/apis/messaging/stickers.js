@@ -6,9 +6,7 @@
  * Made by @ChoruOfficial
  */
 
-require('module-alias/register');
-const utils = require("@utils");
-
+const utils = require('../../../utils');
 /**
  * Format the sticker pack list (store or tray)
  * @param {object} data - Raw GraphQL response
