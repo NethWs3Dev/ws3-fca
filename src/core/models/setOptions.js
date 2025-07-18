@@ -1,7 +1,6 @@
 "use strict";
 
-require('module-alias/register');
-const utils = require("@utils");
+const utils = require('../utils');
 
 /**
  * Sets global options for the API.
