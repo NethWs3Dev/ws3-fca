@@ -1,6 +1,5 @@
 "use strict";
-require('module-alias/register');
-const utils = require("@utils");
+const utils = require('../../../utils');
 
 module.exports = function (defaultFuncs, api, ctx) {
   return function addExternalModule(moduleObj) {
