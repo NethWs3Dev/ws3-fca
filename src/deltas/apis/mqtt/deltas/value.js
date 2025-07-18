@@ -1,7 +1,7 @@
 "use strict";
 
-require('module-alias/register');
-const utils = require("@utils");
+const utils = require('../../../../utils'); // Changed from @utils to relative path
+
 
 function parseDelta(defaultFuncs, api, ctx, globalCallback, v) {
   if (v.delta.class == "NewMessage") {
