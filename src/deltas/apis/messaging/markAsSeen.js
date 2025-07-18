@@ -1,7 +1,6 @@
 "use strict";
 // @ChoruOfficial
-require('module-alias/register');
-const utils = require("@utils");
+const utils = require('../../../utils');
 
 /**
  * @param {Object} defaultFuncs
