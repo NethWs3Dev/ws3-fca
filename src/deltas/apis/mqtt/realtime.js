@@ -2,8 +2,7 @@
 
 const { WebSocket } = require("undici");
 const EventEmitter = require("events");
-require("module-alias/register");
-const utils = require("@utils");
+const utils = require('../../../utils'); 
 const HttpsProxyAgent = require("https-proxy-agent");
 
 function formatNotification(data) {
