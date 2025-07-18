@@ -4,7 +4,7 @@ require('module-alias/register');
 const utils = require("@utils");
 
 module.exports = function (defaultFuncs, api, ctx) {
-// Remade By ChoruOfficial 
+// Remade By ChoruOfficial
   /**
    * Uploads an attachment to Facebook's servers.
    * @param {Array<Stream>} attachments An array of readable streams.
@@ -61,14 +61,13 @@ module.exports = function (defaultFuncs, api, ctx) {
           }
           if (msg.attachment) {
               payload.send_type = 3;
-              // This is the line that was causing the issue.
-              // By removing `payload.text = null;`, we allow a body with attachments.
+              [cite_start]// By removing `payload.text = null;`, we allow a body with attachments. [cite: 488]
               payload.attachment_fbids = Array.isArray(msg.attachment) ? msg.attachment : [msg.attachment];
           }
       }
       return payload;
   }
-  
+
   /**
    * Sends a message to a thread via MQTT with optional sequential editing.
    * @param {object|string} msg The message to send. Can be a string or an object.
@@ -100,7 +99,7 @@ module.exports = function (defaultFuncs, api, ctx) {
     cb = cb || function () {};
 
     if (typeof msg !== 'string' && typeof msg !== 'object') {
-        return cb({ error: "Message should be of type string or object, not " + typeof msg + "." });
+        return cb({ error: "Message should be of type string or object, not " + utils.getType(msg) + "." });
     }
 
     const otid = utils.generateOfflineThreadingID();
@@ -121,7 +120,7 @@ module.exports = function (defaultFuncs, api, ctx) {
         task_id: 1,
         failure_count: null,
     }];
-    
+
     if (replyTo) {
       tasks[0].payload.reply_metadata = {
         reply_source_id: replyTo,
@@ -141,13 +140,31 @@ module.exports = function (defaultFuncs, api, ctx) {
         request_id: 1,
         type: 3,
     };
+
     
+    if (typeof msg === 'object' && msg.edit && Array.isArray(msg.edit) && msg.edit.length > 0) {
+        const edits = msg.edit.map(item => {
+            const newText = Array.isArray(item) ? item[0] : item;
+            const delay = (Array.isArray(item) && typeof item[1] === 'number') ? item[1] : (msg.setTimeout || 1000);
+            return [newText, delay];
+        });
+
+        
+        const pendingEditData = { edits: edits, originalReplyId: replyTo, originalOtid: otid };
+        api.pendingEdits.set(otid, pendingEditData); 
+
+        if (replyTo) {
+            
+            api.pendingEdits.set(`reply_${replyTo}`, pendingEditData);
+        }
+    }
+
     if (typeof msg === 'object' && msg.attachment) {
         const attachments = Array.isArray(msg.attachment) ? msg.attachment : [msg.attachment];
         uploadAttachment(attachments, (err, files) => {
             if (err) return cb(err);
             form.payload.tasks[0].payload.attachment_fbids = files.map(file => Object.values(file)[0]);
-            
+
             form.payload.tasks.forEach(task => task.payload = JSON.stringify(task.payload));
             form.payload = JSON.stringify(form.payload);
             ctx.mqttClient.publish("/ls_req", JSON.stringify(form), (err, data) => cb(err, data));
