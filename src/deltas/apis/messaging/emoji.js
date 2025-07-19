@@ -3,48 +3,74 @@
 const utils = require('../../../utils');
 
 module.exports = function (defaultFuncs, api, ctx) {
-  
   /**
-   * Made by Choru Official 
+   * Made by Choru Official
    * Mqtt
    * Sets the custom emoji for a specific Facebook thread via MQTT.
    *
    * @param {string} emoji The emoji character to set as the custom emoji (e.g., "👍", "❤️").
    * @param {string} threadID The ID of the thread where the emoji will be set.
    * @param {Function} [callback] Optional callback function to be invoked upon completion.
-   * @returns {Promise<void>} A promise that resolves on success or rejects on error.
+   * @param {string} [initiatorID] The ID of the user who initiated the emoji change (e.g., from event.senderID).
+   * @returns {Promise<object>} A promise that resolves with a structured event object on success or rejects on error.
    */
-  return function emoji(emoji, threadID, callback) {
-    let resolveFunc = function () {};
-    let rejectFunc = function () {};
-    const returnPromise = new Promise(function (resolve, reject) {
-      resolveFunc = resolve;
-      rejectFunc = reject;
+  return function emoji(emoji, threadID, callback, initiatorID) {
+    let _callback;
+    let _initiatorID;
+
+    let _resolvePromise;
+    let _rejectPromise;
+    const returnPromise = new Promise((resolve, reject) => {
+        _resolvePromise = resolve;
+        _rejectPromise = reject;
     });
 
-    if (utils.getType(threadID) === "Function" || utils.getType(threadID) === "AsyncFunction") {
-      callback = threadID;
-      threadID = null;
+    if (utils.getType(callback) === "Function" || utils.getType(callback) === "AsyncFunction") {
+        _callback = callback;
+        _initiatorID = initiatorID;
+    } else if (utils.getType(threadID) === "Function" || utils.getType(threadID) === "AsyncFunction") {
+        _callback = threadID;
+        threadID = null;
+        _initiatorID = callback;
+    } else if (utils.getType(callback) === "string") {
+        _initiatorID = callback;
+        _callback = undefined;
+    } else {
+        _callback = undefined;
+        _initiatorID = undefined;
     }
 
-    threadID = threadID || ctx.threadID;
-
-    if (!callback) {
-      callback = function (err, data) {
-        if (err) return rejectFunc(err);
-        resolveFunc(data);
+    if (!_callback) {
+      _callback = function (__err, __data) {
+        if (__err) _rejectPromise(__err);
+        else _resolvePromise(__data);
+      };
+    } else {
+      const originalCallback = _callback;
+      _callback = function(__err, __data) {
+        if (__err) {
+          originalCallback(__err);
+          _rejectPromise(__err);
+        } else {
+          originalCallback(null, __data);
+          _resolvePromise(__data);
+        }
       };
     }
 
+    _initiatorID = _initiatorID || ctx.userID;
+
+    threadID = threadID || ctx.threadID;
+
     if (!threadID) {
-      return callback({ error: "threadID is required to set an emoji." });
+      return _callback(new Error("threadID is required to set an emoji."));
     }
     if (!emoji) {
-      return callback({ error: "An emoji character is required." });
+      return _callback(new Error("An emoji character is required."));
     }
 
     if (!ctx.mqttClient) {
-      return callback({ error: "Not connected to MQTT" });
+      return _callback(new Error("Not connected to MQTT"));
     }
 
     ctx.wsReqNumber += 1;
@@ -79,10 +105,18 @@ module.exports = function (defaultFuncs, api, ctx) {
 
     ctx.mqttClient.publish('/ls_req', JSON.stringify(context), { qos: 1, retain: false }, (err) => {
       if (err) {
-        utils.error("setEmoji", err);
-        return callback(err);
+        return _callback(new Error(`MQTT publish failed for emoji: ${err.message || err}`));
       }
-      callback(null);
+      
+      const emojiChangeEvent = {
+        type: "thread_emoji_update",
+        threadID: threadID,
+        newEmoji: emoji,
+        senderID: _initiatorID,
+        BotID: ctx.userID,
+        timestamp: Date.now(),
+      };
+      _callback(null, emojiChangeEvent);
     });
 
     return returnPromise;
