@@ -64,7 +64,7 @@ module.exports = function (defaultFuncs, api, ctx) {
     };
 
     const context = {
-      app_id: "2220391788200892",
+      app_id: ctx.appID",
       payload: {
         epoch_id: parseInt(utils.generateOfflineThreadingID()),
         tasks: [query],
