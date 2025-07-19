@@ -107,8 +107,9 @@ function markAsRead(ctx, api, threadID) {
  * @param {object} ctx The context object.
  * @param {function} globalCallback The global callback function for emitted events.
  */
-function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
+async function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
     const chatOn = ctx.globalOptions.online;
+    const region = ctx.region;
     const foreground = false;
     const sessionID = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) + 1;
     const cid = ctx.clientID;
@@ -121,9 +122,12 @@ function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
     const cookies = ctx.jar.getCookiesSync('https://www.facebook.com').join('; ');
     let host;
     const domain = "wss://edge-chat.messenger.com/chat";
-    if (ctx.region) host = `${domain}?region=${ctx.region.toLowerCase()}&sid=${sessionID}&cid=${cid}`;
-    else host = `${domain}?sid=${sessionID}&cid=${cid}`;
-    utils.log("Connecting to MQTT host:", host);
+    if (region) {
+        host = `${domain}?region=${region.toLowerCase()}&sid=${sessionID}&cid=${cid}`;
+    } else {
+        host = `${domain}?sid=${sessionID}&cid=${cid}`;
+    }
+    utils.log("Logged in! Connecting to MQTT...");
 
     const options = {
         clientId: 'mqttwsclient', protocolId: 'MQIsdp', protocolVersion: 3,
@@ -142,14 +146,14 @@ function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
     ctx.mqttClient = new mqtt.Client(_ => websocket(host, options.wsOptions), options);
     const mqttClient = ctx.mqttClient;
 
-    mqttClient.on('error', function (err) {
+    mqttClient.on('error', (err) => {
         utils.error("listenMqtt", err);
         mqttClient.end();
         if (ctx.globalOptions.autoReconnect) getSeqID();
         else globalCallback({ type: "stop_listen", error: "Connection refused" });
     });
 
-    mqttClient.on('connect', () => {
+    mqttClient.on('connect', async () => {
         topics.forEach(topic => mqttClient.subscribe(topic));
         const queue = { sync_api_version: 10, max_deltas_able_to_process: 1000, delta_batch_size: 500, encoding: "JSON", entity_fbid: ctx.userID, };
         let topic;
@@ -162,6 +166,9 @@ function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
             queue.initial_titan_sequence_id = ctx.lastSeqId;
             queue.device_params = null;
         }
+        utils.log(`Successfully connected to MQTT.`);
+        const { name: botName = "Facebook User", uid = ctx.userID } = await api.getBotInitialData();
+        utils.log(`Hello, ${botName} (${uid})`);
         mqttClient.publish(topic, JSON.stringify(queue), { qos: 1, retain: false });
     });
 
@@ -225,7 +232,7 @@ function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
  * @returns {function(callback: Function): EventEmitter} An EventEmitter for message events.
  */
 module.exports = function (defaultFuncs, api, ctx) {
-    let globalCallback = () => { };
+    let globalCallback = () => {};
 
     /**
      * Retrieves the sequence ID for MQTT listening.

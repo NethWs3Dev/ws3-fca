@@ -21,7 +21,7 @@ async function setOptions(globalOptions, options = {}) {
         autoMarkDelivery: (value) => (globalOptions.autoMarkDelivery = Boolean(value)),
         autoMarkRead: (value) => (globalOptions.autoMarkRead = Boolean(value)),
         listenTyping: (value) => (globalOptions.listenTyping = Boolean(value)),
-        proxy: (value) => {
+        proxy(value) {
             if (typeof value !== "string") {
                 delete globalOptions.proxy;
                 utils.setProxy();
@@ -32,13 +32,18 @@ async function setOptions(globalOptions, options = {}) {
         },
         autoReconnect: (value) => (globalOptions.autoReconnect = Boolean(value)),
         emitReady: (value) => (globalOptions.emitReady = Boolean(value)),
-        randomUserAgent: (value) => {
+        randomUserAgent(value) {
             globalOptions.randomUserAgent = Boolean(value);
             if (value) {
                 globalOptions.userAgent = utils.randomUserAgent();
             }
         },
-        bypassRegion: (value) => (globalOptions.bypassRegion = value),
+        bypassRegion(value) {
+            if (value){
+                value = value.toUpperCase();
+            } 
+            globalOptions.bypassRegion = value;
+        }
     };
     Object.entries(options).forEach(([key, value]) => {
         if (optionHandlers[key]) optionHandlers[key](value);

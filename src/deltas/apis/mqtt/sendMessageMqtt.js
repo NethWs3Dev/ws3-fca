@@ -60,7 +60,7 @@ module.exports = function (defaultFuncs, api, ctx) {
           }
           if (msg.attachment) {
               payload.send_type = 3;
-              [cite_start]// By removing `payload.text = null;`, we allow a body with attachments. [cite: 488]
+              //[cite_start]// By removing `payload.text = null;`, we allow a body with attachments. [cite: 488]
               payload.attachment_fbids = Array.isArray(msg.attachment) ? msg.attachment : [msg.attachment];
           }
       }
@@ -95,7 +95,7 @@ module.exports = function (defaultFuncs, api, ctx) {
       cb = callback;
     }
 
-    cb = cb || function () {};
+    cb = cb || (() => {});
 
     if (typeof msg !== 'string' && typeof msg !== 'object') {
         return cb({ error: "Message should be of type string or object, not " + utils.getType(msg) + "." });
@@ -153,7 +153,6 @@ module.exports = function (defaultFuncs, api, ctx) {
         api.pendingEdits.set(otid, pendingEditData); 
 
         if (replyTo) {
-            
             api.pendingEdits.set(`reply_${replyTo}`, pendingEditData);
         }
     }

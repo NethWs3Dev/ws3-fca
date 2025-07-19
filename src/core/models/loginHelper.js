@@ -87,9 +87,10 @@ async function loginHelper(credentials, globalOptions, callback, setOptionsFunc,
          *
          * @returns {void}
          */
-        const loadApiModules = () => {
+        const loadApiModules = (customFolder) => {
+            if (!customFolder) return;
             // CORRECTED PATH: From src/core/models/ to src/deltas/apis
-            const apiPath = path.join(__dirname, '..', '..', 'deltas', 'apis');
+            const apiPath = customFolder;
             const apiFolders = fs.readdirSync(apiPath)
                 .filter(name => fs.lstatSync(path.join(apiPath, name)).isDirectory());
 
@@ -114,12 +115,12 @@ async function loginHelper(credentials, globalOptions, callback, setOptionsFunc,
                 api['realtime'] = require(realtimePath)(defaultFuncs, api, ctx);
             }
             if (fs.existsSync(listenPath)) {
-                api['listen'] = require(listenPath)(defaultFuncs, api, ctx);
+                api['listenMqtt'] = require(listenPath)(defaultFuncs, api, ctx);
             }
             
             // listenMqtt added sir
-            if (api.listen){
-                api.listenMqtt = api.listen;
+            if (api.listenMqtt){
+                api.listen = api.listenMqtt;
             }
             
             // sendMessage added sir
@@ -128,14 +129,13 @@ async function loginHelper(credentials, globalOptions, callback, setOptionsFunc,
             }
         };
 
-        loadApiModules();
-
+        loadApiModules(path.join(__dirname, '..', '..', 'deltas', 'apis'));
+        api.addFunctions = loadApiModules;
         api.getCurrentUserID = () => ctx.userID;
         api.getOptions = (key) => key ? globalOptions[key] : globalOptions;
         api.ctx = ctx;
         api.defaultFuncs = defaultFuncs;
         api.globalOptions = globalOptions;
-
         return callback(null, api);
     } catch (error) {
         utils.error("loginHelper", error.error || error);

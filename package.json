@@ -12,11 +12,10 @@
     "type": "git",
     "url": "https://github.com/NethWs3Dev/ws3-fca"
   },
-  "author": "Choru Official",
+  "author": "NethWs3Dev",
   "contributors": [
-    "Kenneth Aceberos",
-    "Jonell Magallanes",
-    "Johnsteve Costaños"
+    "Choru Official (Johnsteve Costaños)",
+    "Jonell Magallanes"
   ],
   "community": "Exocore",
   "license": "MIT",
@@ -46,6 +45,7 @@
     "freeport": "^1.0.5",
     "gradient-string": "^1.1.0",
     "https-proxy-agent": "^4.0.0",
+    "jsonpath-plus": "^10.3.0",
     "lodash": "^4.17.21",
     "mqtt": "^3.0.0",
     "node-cron": "^3.0.3",
