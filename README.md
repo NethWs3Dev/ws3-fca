@@ -1,7 +1,8 @@
 # 🚘 ws3-fca
 
 ![Image](wiegine.png)
-
+# Fully Mqtt
+### Remodified by Choru Official 
 **ws3-fca** is a fully refactored Facebook Chat API (FCA) client built for **reliable**, **real-time**, and **modular** interaction with Facebook Messenger. Designed with modern bot development in mind, it offers full control over Messenger automation through a clean, stable interface.
 
 ---
@@ -165,7 +166,7 @@ login(credentials, {
 ## 🙌 Credits
 
 * 🔧 **@NethWs3Dev (Kenneth Aceberos)** – Main developer, equal maintainer, feature and patch contributions.
-* 💧 **@ChoruOfficial** – Lead developer, refactor of original FCA code.
+* 💧 **@ChoruOfficial** – Lead developer, refactor of original FCA code, Fully Setup Mqtt.
 * 🔮 **@CommunityExocore** – Foundational core design and architecture.
 
 > Copyright (c) 2015
