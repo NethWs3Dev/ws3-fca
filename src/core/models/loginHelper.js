@@ -86,16 +86,11 @@ async function loginHelper(credentials, globalOptions, callback, setOptionsFunc,
          * Loads API modules from the deltas/apis directory.
          *
          * @returns {void}
-         */
-<<<<<<< HEAD
+         */ 
         const loadApiModules = (customFolder) => {
             if (!customFolder) return;
             // CORRECTED PATH: From src/core/models/ to src/deltas/apis
             const apiPath = customFolder;
-=======
-        const loadApiModules = () => {
-            const apiPath = path.join(__dirname, '..', '..', 'deltas', 'apis');
->>>>>>> 678a9bb9874049188fc76847b7463df9b292cb13
             const apiFolders = fs.readdirSync(apiPath)
                 .filter(name => fs.lstatSync(path.join(apiPath, name)).isDirectory());
 
@@ -133,16 +128,12 @@ async function loginHelper(credentials, globalOptions, callback, setOptionsFunc,
                 api.sendMessage = api.sendMessageMqtt;
             }
         };
-
-<<<<<<< HEAD
+        
         loadApiModules(path.join(__dirname, '..', '..', 'deltas', 'apis'));
         api.addFunctions = loadApiModules;
-=======
-        loadApiModules();
         api.setMessageReaction = api.setMessageReactionMqtt;
         api.sendMessage = api.sendMessageMqtt;   
->>>>>>> 678a9bb9874049188fc76847b7463df9b292cb13
-        api.getCurrentUserID = () => ctx.userID;
+        api.getCurrentUserID = () => ctx.userID; 
         api.getOptions = (key) => key ? globalOptions[key] : globalOptions;
         api.ctx = ctx;
         api.defaultFuncs = defaultFuncs;
