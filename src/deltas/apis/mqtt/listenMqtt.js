@@ -115,7 +115,7 @@ async function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
     const cid = ctx.clientID;
     const username = {
         u: ctx.userID, s: sessionID, chat_on: chatOn, fg: foreground, d: cid, ct: 'websocket',
-        aid: ctx.appID,
+        aid: ctx.mqttAppID,
         mqtt_sid: '', cp: 3, ecp: 10, st: [], pm: [],
         dc: '', no_auto_fg: true, gas: null, pack: [], a: ctx.globalOptions.userAgent,
     };
@@ -127,7 +127,7 @@ async function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
     } else {
         host = `${domain}?sid=${sessionID}&cid=${cid}`;
     }
-    utils.log("Logged in! Connecting to MQTT...");
+    utils.log("Logged in! Connecting to MQTT... " + host);
 
     const options = {
         clientId: 'mqttwsclient', protocolId: 'MQIsdp', protocolVersion: 3,
