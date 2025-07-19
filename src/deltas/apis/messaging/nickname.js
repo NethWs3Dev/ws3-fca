@@ -4,6 +4,8 @@ const utils = require('../../../utils');
 
 module.exports = function (defaultFuncs, api, ctx) { 
   /**
+   * Made by Choru Official 
+   * Mqtt
    * Sets a nickname for a participant in a Facebook thread via MQTT.
    *
    * @param {string} nickname The new nickname to set.
