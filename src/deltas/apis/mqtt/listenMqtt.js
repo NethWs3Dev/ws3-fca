@@ -1,6 +1,5 @@
 "use strict";
-
-const utils = require('../../../utils'); // Changed from @utils to relative path
+const utils = require('../../../utils');
 const mqtt = require('mqtt');
 const websocket = require('websocket-stream');
 const HttpsProxyAgent = require('https-proxy-agent');
@@ -13,16 +12,27 @@ const topics = [
     "/legacy_web", "/webrtc", "/rtc_multi", "/onevc", "/br_sr", "/sr_res",
     "/t_ms", "/thread_typing", "/orca_typing_notifications", "/notify_disconnect",
     "/orca_presence", "/inbox", "/mercury", "/messaging_events",
-    "/orca_message_notifications", "/pp", "/webrtc_response",
+    "/orca_message_notifications", "/pp", "/webrtc_response"
 ];
 
+function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
+function getRandomReconnectTime() {
+    const min = 26 * 60 * 1000;
+    const max = 60 * 60 * 1000;
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 /**
- * Checks for and executes pending message edits.
- *
- * @param {object} api The full API object.
- * @param {object} deltaMessageMetadata The messageMetadata from the received delta.
- * @param {string} confirmedMessageID The messageID confirmed by the delta.
- * @param {object} ctx The context object (needed for userID/pageID check within this function).
+ * @param {Object} api
+ * @param {Object} deltaMessageMetadata
+ * @param {string} confirmedMessageID
+ * @param {Object} ctx
  */
 async function handlePendingEdits(api, deltaMessageMetadata, confirmedMessageID, ctx) {
     const delta_otid = deltaMessageMetadata.offlineThreadingId;
@@ -31,7 +41,6 @@ async function handlePendingEdits(api, deltaMessageMetadata, confirmedMessageID,
 
     let editData = null;
     let keyFound = null;
-
     if (api.pendingEdits.has(delta_otid)) {
         editData = api.pendingEdits.get(delta_otid);
         keyFound = delta_otid;
@@ -42,7 +51,6 @@ async function handlePendingEdits(api, deltaMessageMetadata, confirmedMessageID,
         if (api.pendingEdits.has(replyKey)) {
             editData = api.pendingEdits.get(replyKey);
             keyFound = replyKey;
-
             if (editData && keyFound !== delta_otid) {
                 api.pendingEdits.set(delta_otid, editData);
                 editData.originalOtid = delta_otid;
@@ -53,15 +61,13 @@ async function handlePendingEdits(api, deltaMessageMetadata, confirmedMessageID,
     }
 
     const isBotMessageForEdit = (sender_actorFbId == ctx.userID) ||
-                                (ctx.globalOptions.pageID && sender_actorFbId == ctx.globalOptions.pageID);
-
+        (ctx.globalOptions.pageID && sender_actorFbId == ctx.globalOptions.pageID);
 
     if (editData) {
         if (isBotMessageForEdit) {
             api.pendingEdits.delete(keyFound);
             if (editData.originalOtid && editData.originalOtid !== keyFound) api.pendingEdits.delete(editData.originalOtid);
             if (editData.originalReplyId && `reply_${editData.originalReplyId}` !== keyFound) api.pendingEdits.delete(`reply_${editData.originalReplyId}`);
-
             for (const edit of editData.edits) {
                 const [newText, delayAmount] = edit;
                 await new Promise(resolve => setTimeout(resolve, delayAmount));
@@ -76,20 +82,14 @@ async function handlePendingEdits(api, deltaMessageMetadata, confirmedMessageID,
                     break;
                 }
             }
-        } else {
-            // No action: Found edit data, but message is not from the bot.
         }
-    } else {
-        // No action: No pending edits found.
     }
 }
 
 /**
- * Marks a message as read in the given thread.
- *
- * @param {object} ctx The context object.
- * @param {object} api The full API object.
- * @param {string} threadID The ID of the thread to mark as read.
+ * @param {Object} ctx
+ * @param {Object} api
+ * @param {string} threadID
  */
 function markAsRead(ctx, api, threadID) {
     if (ctx.globalOptions.autoMarkRead && threadID) {
@@ -100,12 +100,10 @@ function markAsRead(ctx, api, threadID) {
 }
 
 /**
- * Listens for MQTT messages from Facebook's chat servers.
- *
- * @param {object} defaultFuncs Default API functions.
- * @param {object} api The full API object.
- * @param {object} ctx The context object.
- * @param {function} globalCallback The global callback function for emitted events.
+ * @param {Object} defaultFuncs
+ * @param {Object} api
+ * @param {Object} ctx
+ * @param {Function} globalCallback
  */
 async function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
     const chatOn = ctx.globalOptions.online;
@@ -115,9 +113,8 @@ async function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
     const cid = ctx.clientID;
     const username = {
         u: ctx.userID, s: sessionID, chat_on: chatOn, fg: foreground, d: cid, ct: 'websocket',
-        aid: ctx.mqttAppID,
-        mqtt_sid: '', cp: 3, ecp: 10, st: [], pm: [],
-        dc: '', no_auto_fg: true, gas: null, pack: [], a: ctx.globalOptions.userAgent,
+        aid: ctx.mqttAppID, mqtt_sid: '', cp: 3, ecp: 10, st: [], pm: [],
+        dc: '', no_auto_fg: true, gas: null, pack: [], a: ctx.globalOptions.userAgent
     };
     const cookies = ctx.jar.getCookiesSync('https://www.facebook.com').join('; ');
     let host;
@@ -127,7 +124,8 @@ async function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
     } else {
         host = `${domain}?sid=${sessionID}&cid=${cid}`;
     }
-    utils.log("Logged in! Connecting to MQTT... " + host);
+
+    utils.log("Connecting to MQTT with new IDs...", host);
 
     const options = {
         clientId: 'mqttwsclient', protocolId: 'MQIsdp', protocolVersion: 3,
@@ -137,10 +135,11 @@ async function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
                 'Cookie': cookies, 'Origin': 'https://www.messenger.com', 'User-Agent': username.a,
                 'Referer': 'https://www.messenger.com/', 'Host': new URL(host).hostname
             },
-            origin: 'https://www.messenger.com', protocolVersion: 13, binaryType: 'arraybuffer',
+            origin: 'https://www.messenger.com', protocolVersion: 13, binaryType: 'arraybuffer'
         },
-        keepalive: 10, reschedulePings: true, connectTimeout: 60 * 1000, reconnectPeriod: 1000
+        keepalive: 10, reschedulePings: true, connectTimeout: 60000, reconnectPeriod: 1000
     };
+
     if (ctx.globalOptions.proxy) options.wsOptions.agent = new HttpsProxyAgent(ctx.globalOptions.proxy);
 
     ctx.mqttClient = new mqtt.Client(_ => websocket(host, options.wsOptions), options);
@@ -155,7 +154,7 @@ async function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
 
     mqttClient.on('connect', async () => {
         topics.forEach(topic => mqttClient.subscribe(topic));
-        const queue = { sync_api_version: 10, max_deltas_able_to_process: 1000, delta_batch_size: 500, encoding: "JSON", entity_fbid: ctx.userID, };
+        const queue = { sync_api_version: 10, max_deltas_able_to_process: 1000, delta_batch_size: 500, encoding: "JSON", entity_fbid: ctx.userID };
         let topic;
         if (ctx.syncToken) {
             topic = "/messenger_sync_get_diffs";
@@ -166,6 +165,7 @@ async function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
             queue.initial_titan_sequence_id = ctx.lastSeqId;
             queue.device_params = null;
         }
+
         utils.log(`Successfully connected to MQTT.`);
         const { name: botName = "Facebook User", uid = ctx.userID } = await api.getBotInitialData();
         utils.log(`Hello, ${botName} (${uid})`);
@@ -186,25 +186,16 @@ async function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
         }, 50000);
     }
 
-    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
     mqttClient.on('message', (topic, message, _packet) => {
         try {
             const jsonMessage = JSON.parse(message.toString());
-
             if (topic === "/t_ms") {
-                if (jsonMessage.lastIssuedSeqId) {
-                    ctx.lastSeqId = parseInt(jsonMessage.lastIssuedSeqId);
-                }
-
+                if (jsonMessage.lastIssuedSeqId) ctx.lastSeqId = parseInt(jsonMessage.lastIssuedSeqId);
                 if (jsonMessage.deltas) {
                     for (const delta of jsonMessage.deltas) {
                         if (delta.class === "NewMessage") {
-                            const messageID = delta.messageMetadata.messageId;
-
-                            handlePendingEdits(api, delta.messageMetadata, messageID, ctx);
+                            handlePendingEdits(api, delta.messageMetadata, delta.messageMetadata.messageId, ctx);
                         }
-
                         parseDelta(defaultFuncs, api, ctx, globalCallback, { delta });
                     }
                 }
@@ -223,25 +214,26 @@ async function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
     });
 }
 
-/**
- * The main module function for listening to MQTT events.
- *
- * @param {object} defaultFuncs Default API functions.
- * @param {object} api The full API object.
- * @param {object} ctx The context object.
- * @returns {function(callback: Function): EventEmitter} An EventEmitter for message events.
- */
 module.exports = function (defaultFuncs, api, ctx) {
     let globalCallback = () => {};
+    let reconnectInterval;
 
-    /**
-     * Retrieves the sequence ID for MQTT listening.
-     *
-     * @returns {Promise<void>}
-     */
     getSeqID = async () => {
         try {
-            form = { "queries": JSON.stringify({ "o0": { "doc_id": "3336396659757871", "query_params": { "limit": 1, "before": null, "tags": ["INBOX"], "includeDeliveryReceipts": false, "includeSeqID": true } } }) };
+            form = {
+                "queries": JSON.stringify({
+                    "o0": {
+                        "doc_id": "3336396659757871",
+                        "query_params": {
+                            "limit": 1,
+                            "before": null,
+                            "tags": ["INBOX"],
+                            "includeDeliveryReceipts": false,
+                            "includeSeqID": true
+                        }
+                    }
+                })
+            };
             const resData = await defaultFuncs.post("https://www.facebook.com/api/graphqlbatch/", ctx.jar, form).then(utils.parseAndCheckLogin(ctx, defaultFuncs));
             if (utils.getType(resData) != "Array" || (resData.error && resData.error !== 1357001)) throw resData;
             ctx.lastSeqId = resData[0].o0.data.viewer.message_threads.sync_sequence_id;
@@ -256,8 +248,11 @@ module.exports = function (defaultFuncs, api, ctx) {
     return async (callback) => {
         class MessageEmitter extends EventEmitter {
             stop() {
-                globalCallback = () => { };
-                if (presenceInterval) clearInterval(presenceInterval);
+                globalCallback = () => {};
+                if (reconnectInterval) {
+                    clearTimeout(reconnectInterval);
+                    reconnectInterval = null;
+                }
                 if (ctx.mqttClient) {
                     ctx.mqttClient.end();
                     ctx.mqttClient = undefined;
@@ -265,18 +260,22 @@ module.exports = function (defaultFuncs, api, ctx) {
                 this.emit('stop');
             }
         }
+
         const msgEmitter = new MessageEmitter();
+
         globalCallback = (error, message) => {
             if (error) return msgEmitter.emit("error", error);
             if (message.type === "message" || message.type === "message_reply") {
                 markAsRead(ctx, api, message.threadID);
-                  }
-
+            }
             msgEmitter.emit("message", message);
         };
+
         if (typeof callback === 'function') globalCallback = callback;
+
         if (!ctx.firstListen || !ctx.lastSeqId) await getSeqID();
         else listenMqtt(defaultFuncs, api, ctx, globalCallback);
+
         if (ctx.firstListen) {
             try {
                 await api.markAsReadAll();
@@ -284,7 +283,23 @@ module.exports = function (defaultFuncs, api, ctx) {
                 utils.error("Failed to mark all messages as read on startup:", err);
             }
         }
+
         ctx.firstListen = false;
+
+        async function scheduleReconnect() {
+            const time = getRandomReconnectTime();
+            utils.log(`Scheduled reconnect in ${Math.floor(time / 60000)} minutes...`);
+            reconnectInterval = setTimeout(() => {
+                utils.log(`Reconnecting MQTT with new clientID...`);
+                if (ctx.mqttClient) ctx.mqttClient.end(true);
+                ctx.clientID = generateUUID();
+                listenMqtt(defaultFuncs, api, ctx, globalCallback);
+                scheduleReconnect();
+            }, time);
+        }
+
+        scheduleReconnect();
+
         return msgEmitter;
     };
 };
