@@ -10,7 +10,7 @@
 ## 📚 Documentation & Feedback
 
 Full documentation and advanced examples:
-**[https://docs-exocore.onrender.com/](https://docs-exocore.onrender.com/)**
+**[[https://docs-exocore.onrender.com/](https://exocore-dev-docs-exocore.hf.space)](https://exocore-dev-docs-exocore.hf.space)**
 
 If you encounter issues or want to give feedback, feel free to message us via Facebook:
 
