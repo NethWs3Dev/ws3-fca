@@ -118,6 +118,7 @@ async function loginHelper(credentials, globalOptions, callback, setOptionsFunc,
         };
 
         loadApiModules();
+        api.setMessageReaction = api.setMessageReactionMqtt;
         api.sendMessage = api.sendMessageMqtt;   
         api.getCurrentUserID = () => ctx.userID;
         api.getOptions = (key) => key ? globalOptions[key] : globalOptions;
