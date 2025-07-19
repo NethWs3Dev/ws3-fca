@@ -3,7 +3,6 @@
 const utils = require('../../../utils');
 
 module.exports = function (defaultFuncs, api, ctx) {
-// Remade By ChoruOfficial
   /**
    * Uploads an attachment to Facebook's servers.
    * @param {Array<Stream>} attachments An array of readable streams.
@@ -39,31 +38,30 @@ module.exports = function (defaultFuncs, api, ctx) {
   }
 
   function getSendPayload(threadID, msg, otid) {
-      const isString = typeof msg === 'string';
-      const body = isString ? msg : msg.body || "";
-      let payload = {
-          thread_id: threadID.toString(),
-          otid: otid.toString(),
-          source: 0,
-          send_type: 1,
-          sync_group: 1,
-          text: body,
-          initiating_source: 1,
-          skip_url_preview_gen: 0,
-      };
-
-      if (typeof msg === 'object') {
-          if (msg.sticker) {
-              payload.send_type = 2;
-              payload.sticker_id = msg.sticker;
-              payload.text = null;
-          }
-          if (msg.attachment) {
-              payload.send_type = 3;
-              payload.attachment_fbids = Array.isArray(msg.attachment) ? msg.attachment : [msg.attachment];
-          }
+    const isString = typeof msg === 'string';
+    const body = isString ? msg : msg.body || "";
+    let payload = {
+      thread_id: threadID.toString(),
+      otid: otid.toString(),
+      source: 0,
+      send_type: 1,
+      sync_group: 1,
+      text: body,
+      initiating_source: 1,
+      skip_url_preview_gen: 0,
+    };
+    if (typeof msg === 'object') {
+      if (msg.sticker) {
+        payload.send_type = 2;
+        payload.sticker_id = msg.sticker;
+        payload.text = null;
       }
-      return payload;
+      if (msg.attachment) {
+        payload.send_type = 3;
+        payload.attachment_fbids = Array.isArray(msg.attachment) ? msg.attachment : [msg.attachment];
+      }
+    }
+    return payload;
   }
 
   /**
@@ -94,29 +92,34 @@ module.exports = function (defaultFuncs, api, ctx) {
       cb = callback;
     }
 
-    cb = cb || (() => {});
+    cb = cb || function () {};
 
     if (typeof msg !== 'string' && typeof msg !== 'object') {
-        return cb({ error: "Message should be of type string or object, not " + utils.getType(msg) + "." });
+      return cb({ error: "Message should be of type string or object, not " + utils.getType(msg) + "." });
+    }
+
+    if (typeof threadID !== 'string' && typeof threadID !== 'number') {
+      return cb({ error: "threadID must be a string or number." });
     }
 
     const otid = utils.generateOfflineThreadingID();
+
     const tasks = [{
-        label: "46",
-        payload: getSendPayload(threadID, msg, otid),
-        queue_name: threadID.toString(),
-        task_id: 0,
-        failure_count: null,
+      label: "46",
+      payload: getSendPayload(threadID, msg, otid),
+      queue_name: threadID.toString(),
+      task_id: 0,
+      failure_count: null,
     }, {
-        label: "21",
-        payload: {
-            thread_id: threadID.toString(),
-            last_read_watermark_ts: Date.now(),
-            sync_group: 1,
-        },
-        queue_name: threadID.toString(),
-        task_id: 1,
-        failure_count: null,
+      label: "21",
+      payload: {
+        thread_id: threadID.toString(),
+        last_read_watermark_ts: Date.now(),
+        sync_group: 1,
+      },
+      queue_name: threadID.toString(),
+      task_id: 1,
+      failure_count: null,
     }];
 
     if (replyTo) {
@@ -128,48 +131,45 @@ module.exports = function (defaultFuncs, api, ctx) {
     }
 
     const form = {
-        app_id: "2220391788200892",
-        payload: {
-            tasks: tasks,
-            epoch_id: utils.generateOfflineThreadingID(),
-            version_id: "6120284488008082",
-            data_trace_id: null,
-        },
-        request_id: 1,
-        type: 3,
+      app_id: "2220391788200892",
+      payload: {
+        tasks: tasks,
+        epoch_id: utils.generateOfflineThreadingID(),
+        version_id: "6120284488008082",
+        data_trace_id: null,
+      },
+      request_id: 1,
+      type: 3,
     };
 
-    
     if (typeof msg === 'object' && msg.edit && Array.isArray(msg.edit) && msg.edit.length > 0) {
-        const edits = msg.edit.map(item => {
-            const newText = Array.isArray(item) ? item[0] : item;
-            const delay = (Array.isArray(item) && typeof item[1] === 'number') ? item[1] : (msg.setTimeout || 1000);
-            return [newText, delay];
-        });
+      const edits = msg.edit.map(item => {
+        const newText = Array.isArray(item) ? item[0] : item;
+        const delay = (Array.isArray(item) && typeof item[1] === 'number') ? item[1] : (msg.setTimeout || 1000);
+        return [newText, delay];
+      });
 
-        
-        const pendingEditData = { edits: edits, originalReplyId: replyTo, originalOtid: otid };
-        api.pendingEdits.set(otid, pendingEditData); 
-
-        if (replyTo) {
-            api.pendingEdits.set(`reply_${replyTo}`, pendingEditData);
-        }
+      const pendingEditData = { edits: edits, originalReplyId: replyTo, originalOtid: otid };
+      api.pendingEdits.set(otid, pendingEditData);
+      if (replyTo) {
+        api.pendingEdits.set(`reply_${replyTo}`, pendingEditData);
+      }
     }
 
     if (typeof msg === 'object' && msg.attachment) {
-        const attachments = Array.isArray(msg.attachment) ? msg.attachment : [msg.attachment];
-        uploadAttachment(attachments, (err, files) => {
-            if (err) return cb(err);
-            form.payload.tasks[0].payload.attachment_fbids = files.map(file => Object.values(file)[0]);
+      const attachments = Array.isArray(msg.attachment) ? msg.attachment : [msg.attachment];
+      uploadAttachment(attachments, (err, files) => {
+        if (err) return cb(err);
+        form.payload.tasks[0].payload.attachment_fbids = files.map(file => Object.values(file)[0]);
 
-            form.payload.tasks.forEach(task => task.payload = JSON.stringify(task.payload));
-            form.payload = JSON.stringify(form.payload);
-            ctx.mqttClient.publish("/ls_req", JSON.stringify(form), (err, data) => cb(err, data));
-        });
-    } else {
         form.payload.tasks.forEach(task => task.payload = JSON.stringify(task.payload));
         form.payload = JSON.stringify(form.payload);
         ctx.mqttClient.publish("/ls_req", JSON.stringify(form), (err, data) => cb(err, data));
+      });
+    } else {
+      form.payload.tasks.forEach(task => task.payload = JSON.stringify(task.payload));
+      form.payload = JSON.stringify(form.payload);
+      ctx.mqttClient.publish("/ls_req", JSON.stringify(form), (err, data) => cb(err, data));
     }
   };
 };
