@@ -86,11 +86,10 @@ async function loginHelper(credentials, globalOptions, callback, setOptionsFunc,
          * Loads API modules from the deltas/apis directory.
          *
          * @returns {void}
-         */ 
-        const loadApiModules = (customFolder) => {
-            if (!customFolder) return;
+         */
+        const loadApiModules = () => {
             // CORRECTED PATH: From src/core/models/ to src/deltas/apis
-            const apiPath = customFolder;
+            const apiPath = path.join(__dirname, '..', '..', 'deltas', 'apis');
             const apiFolders = fs.readdirSync(apiPath)
                 .filter(name => fs.lstatSync(path.join(apiPath, name)).isDirectory());
 
@@ -115,29 +114,19 @@ async function loginHelper(credentials, globalOptions, callback, setOptionsFunc,
                 api['realtime'] = require(realtimePath)(defaultFuncs, api, ctx);
             }
             if (fs.existsSync(listenPath)) {
-                api['listenMqtt'] = require(listenPath)(defaultFuncs, api, ctx);
-            }
-            
-            // listenMqtt added sir
-            if (api.listenMqtt){
-                api.listen = api.listenMqtt;
-            }
-            
-            // sendMessage added sir
-            if (api.sendMessageMqtt){
-                api.sendMessage = api.sendMessageMqtt;
+                api['listen'] = require(listenPath)(defaultFuncs, api, ctx);
             }
         };
-        
-        loadApiModules(path.join(__dirname, '..', '..', 'deltas', 'apis'));
-        api.addFunctions = loadApiModules;
+
+        loadApiModules();
         api.setMessageReaction = api.setMessageReactionMqtt;
-        api.sendMessage = api.sendMessageMqtt;   
-        api.getCurrentUserID = () => ctx.userID; 
+        api.sendMessage = api.sendMessageMqtt;
+        api.getCurrentUserID = () => ctx.userID;
         api.getOptions = (key) => key ? globalOptions[key] : globalOptions;
         api.ctx = ctx;
         api.defaultFuncs = defaultFuncs;
         api.globalOptions = globalOptions;
+
         return callback(null, api);
     } catch (error) {
         utils.error("loginHelper", error.error || error);
