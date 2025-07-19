@@ -60,7 +60,7 @@ module.exports = function (defaultFuncs, api, ctx) {
           }
           if (msg.attachment) {
               payload.send_type = 3;
-              [cite_start]// By removing `payload.text = null;`, we allow a body with attachments. [cite: 488]
+            
               payload.attachment_fbids = Array.isArray(msg.attachment) ? msg.attachment : [msg.attachment];
           }
       }
