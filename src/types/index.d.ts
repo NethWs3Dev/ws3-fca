@@ -306,6 +306,12 @@ declare module "ws3-fca" {
 
         follow(senderID: UserID, follow: boolean, callback?: Callback): void;
 
+        unsent(messageID: MessageID, threadID: ThreadID, callback?: Callback<UnsendMessageEvent>): Promise<UnsendMessageEvent>;
+        emoji(emoji: string, threadID?: ThreadID, callback?: Callback<EmojiEvent>): Promise<EmojiEvent>;
+        gcname(newName: string, threadID?: ThreadID, callback?: Callback<GroupNameEvent>): Promise<GroupNameEvent>;
+        nickname(nickname: string, threadID: ThreadID, participantID: UserID, callback?: Callback<NicknameEvent>): Promise<NicknameEvent>;
+        theme(newName: string, threadID?: ThreadID, callback?: Callback<GroupNameEvent>): Promise<GroupNameEvent>;
+
         [key: string]: any;
     }
 
