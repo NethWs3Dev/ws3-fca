@@ -53,26 +53,17 @@ async function buildAPI(html, jar, netData, globalOptions, fbLinkFunc, errorRetr
     const mqttConfigData = findConfig("MqttWebConfig");
     let mqttEndpoint = mqttConfigData ? mqttConfigData.endpoint : undefined;
     const appID = mqttConfigData ? mqttConfigData.appID : undefined;
-    
-    let region = mqttEndpoint ? new URL(mqttEndpoint).searchParams.get("region")?.toUpperCase() : undefined;
-    const regions = ["PNB", "FTW", "ATN", "SIN", "ASH", "PRN", "HKG"];
-    const isValidRegion = regions.some(_ => globalOptions.bypassRegion.includes(_));
 
-    if (globalOptions.bypassRegion && !isValidRegion){
-        utils.error("Please set a valid region.", "Available regions are", regions.join(', '));
-        utils.log("Since region is invalid, it will use the account's region instead.");
-    }
-    
+    let region = mqttEndpoint ? new URL(mqttEndpoint).searchParams.get("region")?.toUpperCase() : undefined;
     const irisSeqIDMatch = html.match(/irisSeqID:"(.+?)"/);
     const irisSeqID = irisSeqIDMatch ? irisSeqIDMatch[1] : null;
-    if (isValidRegion && mqttEndpoint) {
+    if (globalOptions.bypassRegion && mqttEndpoint) {
         const currentEndpoint = new URL(mqttEndpoint);
         currentEndpoint.searchParams.set('region', globalOptions.bypassRegion.toLowerCase());
         mqttEndpoint = currentEndpoint.toString();
-        utils.warn("Bypass region is enabled. Note that this feature is experimental and may not work on other accounts.");
         region = globalOptions.bypassRegion.toUpperCase();
     }
-    utils.log("Connected to server region:", region);
+
     const ctx = {
         userID,
         jar,
