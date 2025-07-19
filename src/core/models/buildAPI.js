@@ -51,8 +51,14 @@ async function buildAPI(html, jar, netData, globalOptions, fbLinkFunc, errorRetr
     const clientID = clientIDData ? clientIDData.clientID : undefined;
 
     const mqttConfigData = findConfig("MqttWebConfig");
+    const mqttAppID = mqttConfigData ? mqttConfigData.appID : undefined;
+
+    const currentUserData = findConfig("CurrentUserInitialData");
+    const userAppID = currentUserData ? currentUserData.APP_ID : undefined;
+
+    let primaryAppID = userAppID || mqttAppID;
+
     let mqttEndpoint = mqttConfigData ? mqttConfigData.endpoint : undefined;
-    const appID = mqttConfigData ? mqttConfigData.appID : undefined;
 
     let region = mqttEndpoint ? new URL(mqttEndpoint).searchParams.get("region")?.toUpperCase() : undefined;
     const irisSeqIDMatch = html.match(/irisSeqID:"(.+?)"/);
@@ -68,7 +74,9 @@ async function buildAPI(html, jar, netData, globalOptions, fbLinkFunc, errorRetr
         userID,
         jar,
         clientID,
-        appID,
+        appID: primaryAppID, 
+        mqttAppID: mqttAppID, 
+        userAppID: userAppID, 
         globalOptions,
         loggedIn: true,
         access_token: "NONE",
