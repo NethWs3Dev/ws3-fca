@@ -64,7 +64,7 @@ module.exports = function (defaultFuncs, api, ctx) {
     };
 
     const context = {
-      app_id: ctx.appID",
+      app_id: ctx.appID,
       payload: {
         epoch_id: parseInt(utils.generateOfflineThreadingID()),
         tasks: [query],
@@ -80,7 +80,6 @@ module.exports = function (defaultFuncs, api, ctx) {
         return _callback(err);
       }
 
-      
       const unsendInfo = {
         type: "unsend_message",
         threadID: threadID,
