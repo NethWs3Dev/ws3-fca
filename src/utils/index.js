@@ -8,6 +8,7 @@ const constants = require("./constants");
 const formatters = require("./formatters"); 
 const userAgents = require("./user-agents");
 const cheerio = require("cheerio");
+const util = require("util");
 
 /**
  * Fetches a URL, scrapes all <script type="application/json"> tags, and returns their parsed content.
@@ -145,4 +146,6 @@ module.exports = {
   ...userAgents,
   json,
   makeDefaults,
+  promisify: (func) => util.promisify(func),
+  delay: (ms) => new Promise(r => setTimeout(r, ms))
 };

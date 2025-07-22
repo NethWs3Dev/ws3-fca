@@ -2,7 +2,7 @@
 
 const utils = require('../../../utils');
 
-module.exports = function (defaultFuncs, api, ctx) {
+module.exports = (defaultFuncs, api, ctx) => {
   /**
    * Unsends a message.
    * Made by ChoruOfficial 
@@ -12,30 +12,12 @@ module.exports = function (defaultFuncs, api, ctx) {
    * @param {Function} [callback] Optional callback function.
    * @returns {Promise<object>} A promise that resolves with information about the unsend action.
    */
-  return function unsendMessage(messageID, threadID, callback) {
-    let _callback;
-
-    if (typeof threadID === 'function') {
-        _callback = threadID;
-        threadID = null;
-    }
-    if (typeof callback === 'function') {
-        _callback = callback;
-    }
+  
+   //Modified by Neth
+   //iloveyou wiegine
+   
+  return async (messageID, threadID) => {
     
-    let resolvePromise, rejectPromise;
-    const returnPromise = new Promise((resolve, reject) => {
-        resolvePromise = resolve;
-        rejectPromise = reject;
-    });
-
-    if (typeof _callback != "function") {
-      _callback = (err, data) => {
-        if (err) return rejectPromise(err);
-        resolvePromise(data);
-      }
-    }
-
     if (!messageID) {
         return _callback(new Error("messageID is required."));
     }
@@ -62,7 +44,6 @@ module.exports = function (defaultFuncs, api, ctx) {
       queue_name: "unsend_message",
       task_id: ctx.wsTaskNumber
     };
-
     const context = {
       app_id: ctx.appID,
       payload: {
@@ -74,13 +55,9 @@ module.exports = function (defaultFuncs, api, ctx) {
       type: 3
     };
     context.payload = JSON.stringify(context.payload);
-
-    ctx.mqttClient.publish('/ls_req', JSON.stringify(context), { qos: 1, retain: false }, (err) => {
-      if (err) {
-        return _callback(err);
-      }
-
-      const unsendInfo = {
+    const data = await ctx.mqttClient.publish('/ls_req', JSON.stringify(context), { qos: 1, retain: false });
+    return {
+        ...(data && { ...data }),
         type: "unsend_message",
         threadID: threadID,
         messageID: messageID, 
@@ -88,10 +65,5 @@ module.exports = function (defaultFuncs, api, ctx) {
         BotID: ctx.userID,
         timestamp: Date.now(),
       };
-      
-      return _callback(null, unsendInfo);
-    });
-
-    return returnPromise;
   };
 };

@@ -2,7 +2,10 @@
 
 const utils = require('../../../utils');
 
-module.exports = function (defaultFuncs, api, ctx) {
+//Modified by Neth
+//iloveyou wiegine
+
+module.exports = (defaultFuncs, api, ctx) => {
   /**
    * Uploads an attachment to Facebook's servers.
    * @param {Array<Stream>} attachments An array of readable streams.
@@ -68,38 +71,19 @@ module.exports = function (defaultFuncs, api, ctx) {
    * Sends a message to a thread via MQTT with optional sequential editing.
    * @param {object|string} msg The message to send. Can be a string or an object.
    * @param {string} msg.body The main text of the message.
-   * @param {string|Array<string>} [msg.edit] Text or an array of texts to sequentially edit the message to. Max 5 edits.
-   * @param {number} [msg.setTimeout] The delay in milliseconds between each sequential edit. Defaults to 1000ms.
    * @param {*} [msg.attachment] An attachment to send.
    * @param {*} [msg.sticker] A sticker to send.
    * @param {*} [msg.emoji] An emoji to send.
    * @param {string} threadID The ID of the thread.
    * @param {string} [replyToMessage] The ID of the message to reply to.
-   * @param {Function} [callback] The callback function.
    */
-  return function sendMessageMqtt(msg, threadID, replyToMessage, callback) {
-    let cb;
-    let replyTo = null;
-
-    if (typeof replyToMessage === 'function') {
-      cb = replyToMessage;
-    } else if (typeof replyToMessage === 'string') {
-      replyTo = replyToMessage;
-      if (typeof callback === 'function') {
-        cb = callback;
-      }
-    } else if (typeof callback === 'function') {
-      cb = callback;
-    }
-
-    cb = cb || function () {};
-
+  return async (msg, threadID, replyToMessage, callback) => {
     if (typeof msg !== 'string' && typeof msg !== 'object') {
-      return cb({ error: "Message should be of type string or object, not " + utils.getType(msg) + "." });
+      throw new Error("Message should be of type string or object, not " + utils.getType(msg) + ".");
     }
 
     if (typeof threadID !== 'string' && typeof threadID !== 'number') {
-      return cb({ error: "threadID must be a string or number." });
+      throw new Error("threadID must be a string or number.");
     }
 
     const otid = utils.generateOfflineThreadingID();
@@ -122,9 +106,9 @@ module.exports = function (defaultFuncs, api, ctx) {
       failure_count: null,
     }];
 
-    if (replyTo) {
+    if (replyToMessage) {
       tasks[0].payload.reply_metadata = {
-        reply_source_id: replyTo,
+        reply_source_id: replyToMessage,
         reply_source_type: 1,
         reply_type: 0,
       };
@@ -133,7 +117,7 @@ module.exports = function (defaultFuncs, api, ctx) {
     const form = {
       app_id: "2220391788200892",
       payload: {
-        tasks: tasks,
+        tasks,
         epoch_id: utils.generateOfflineThreadingID(),
         version_id: "6120284488008082",
         data_trace_id: null,
@@ -141,35 +125,56 @@ module.exports = function (defaultFuncs, api, ctx) {
       request_id: 1,
       type: 3,
     };
-
-    if (typeof msg === 'object' && msg.edit && Array.isArray(msg.edit) && msg.edit.length > 0) {
-      const edits = msg.edit.map(item => {
-        const newText = Array.isArray(item) ? item[0] : item;
-        const delay = (Array.isArray(item) && typeof item[1] === 'number') ? item[1] : (msg.setTimeout || 1000);
-        return [newText, delay];
-      });
-
-      const pendingEditData = { edits: edits, originalReplyId: replyTo, originalOtid: otid };
-      api.pendingEdits.set(otid, pendingEditData);
-      if (replyTo) {
-        api.pendingEdits.set(`reply_${replyTo}`, pendingEditData);
+    const waitForDelta = async (timeout = 60*1000, interval = 500) => {
+        const startTime = Date.now();
+        while (Date.now() - startTime < timeout) {
+            const delta = api.message.get(otid);
+            if (delta){
+                return delta;
+            }
+            await new Promise(res => setTimeout(res, interval));
+       }
+       api.message.delete(otid);
+       return;
+    }
+    
+    if (msg.attachment) {
+      try {
+        const files = await new Promise((resolve, reject) => {
+          uploadAttachment(
+            Array.isArray(msg.attachment) ? msg.attachment : [msg.attachment],
+            (err, files) => {
+              if (err) return reject(err);
+              return resolve(files);
+            }
+          );
+        });
+        form.payload.tasks[0].payload.attachment_fbids = files.map(file => Object.values(file)[0]);
+      } catch (err) {
+        utils.error("Attachment upload failed:", err);
+        throw new Error(err);
       }
     }
 
-    if (typeof msg === 'object' && msg.attachment) {
-      const attachments = Array.isArray(msg.attachment) ? msg.attachment : [msg.attachment];
-      uploadAttachment(attachments, (err, files) => {
-        if (err) return cb(err);
-        form.payload.tasks[0].payload.attachment_fbids = files.map(file => Object.values(file)[0]);
-
-        form.payload.tasks.forEach(task => task.payload = JSON.stringify(task.payload));
-        form.payload = JSON.stringify(form.payload);
-        ctx.mqttClient.publish("/ls_req", JSON.stringify(form), (err, data) => cb(err, data));
-      });
-    } else {
-      form.payload.tasks.forEach(task => task.payload = JSON.stringify(task.payload));
-      form.payload = JSON.stringify(form.payload);
-      ctx.mqttClient.publish("/ls_req", JSON.stringify(form), (err, data) => cb(err, data));
+    form.payload.tasks.forEach(task => {
+      task.payload = JSON.stringify(task.payload);
+    });
+    form.payload = JSON.stringify(form.payload);
+    const data = await ctx.mqttClient.publish("/ls_req", JSON.stringify(form));
+    const deltaResponse = await waitForDelta();
+    return {
+        ...(data && { ...data }),
+        form,
+        threadID,
+        type: replyToMessage ? "message_reply" : "message",
+        ...(deltaResponse && {
+            body: deltaResponse.body,
+            attachments: deltaResponse.attachments,
+            ...(deltaResponse.messageMetadata && {
+                messageID: deltaResponse.messageMetadata.messageId,
+                offlineThreadingId: deltaResponse.messageMetadata.offlineThreadingId
+            })
+        })
     }
   };
 };

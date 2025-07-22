@@ -59,6 +59,7 @@ async function loginHelper(credentials, globalOptions, callback, setOptionsFunc,
                 },
             };
             api.pendingEdits = new Map();
+            api.message = new Map();
         }
 
         const resp = await utils.get(fbLinkFunc(), jar, null, globalOptions, { noRef: true }).then(utils.saveCookies(jar));
@@ -114,15 +115,13 @@ async function loginHelper(credentials, globalOptions, callback, setOptionsFunc,
                 api['realtime'] = require(realtimePath)(defaultFuncs, api, ctx);
             }
             if (fs.existsSync(listenPath)) {
-                api['listen'] = require(listenPath)(defaultFuncs, api, ctx);
+                api['listenMqtt'] = require(listenPath)(defaultFuncs, api, ctx);
             }
         };
 
-        loadApiModules();
-        api.setMessageReaction = api.setMessageReactionMqtt;
-        api.sendMessage = api.sendMessageMqtt;
         api.getCurrentUserID = () => ctx.userID;
         api.getOptions = (key) => key ? globalOptions[key] : globalOptions;
+        loadApiModules();
         api.ctx = ctx;
         api.defaultFuncs = defaultFuncs;
         api.globalOptions = globalOptions;

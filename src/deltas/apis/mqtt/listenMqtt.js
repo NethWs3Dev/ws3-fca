@@ -34,53 +34,42 @@ function getRandomReconnectTime() {
  * @param {string} confirmedMessageID
  * @param {Object} ctx
  */
-async function handlePendingEdits(api, deltaMessageMetadata, confirmedMessageID, ctx) {
+async function handleMessages(api, deltaMessageMetadata, confirmedMessageID, ctx) {
     const delta_otid = deltaMessageMetadata.offlineThreadingId;
     const delta_replySourceId = deltaMessageMetadata.replySourceId;
+    const replyKey = `reply_${delta_replySourceId}`;
     const sender_actorFbId = deltaMessageMetadata.actorFbId;
-
-    let editData = null;
-    let keyFound = null;
-    if (api.pendingEdits.has(delta_otid)) {
-        editData = api.pendingEdits.get(delta_otid);
-        keyFound = delta_otid;
-    }
-
-    if (!editData && delta_replySourceId) {
-        const replyKey = `reply_${delta_replySourceId}`;
+    let editData, keyFound;
+    const deleteTimeout = key => setTimeout(() => api.pendingEdits.delete(key), 60*1000);
+    if (delta_replySourceId) {
         if (api.pendingEdits.has(replyKey)) {
             editData = api.pendingEdits.get(replyKey);
             keyFound = replyKey;
             if (editData && keyFound !== delta_otid) {
                 api.pendingEdits.set(delta_otid, editData);
                 editData.originalOtid = delta_otid;
-                api.pendingEdits.delete(keyFound);
                 keyFound = delta_otid;
+                api.pendingEdits.delete(keyFound);
             }
         }
     }
 
-    const isBotMessageForEdit = (sender_actorFbId == ctx.userID) ||
-        (ctx.globalOptions.pageID && sender_actorFbId == ctx.globalOptions.pageID);
+    const isBotMessageForEdit = (sender_actorFbId == ctx.userID) || (ctx.globalOptions.pageID && sender_actorFbId == ctx.globalOptions.pageID);
 
     if (editData) {
         if (isBotMessageForEdit) {
-            api.pendingEdits.delete(keyFound);
             if (editData.originalOtid && editData.originalOtid !== keyFound) api.pendingEdits.delete(editData.originalOtid);
             if (editData.originalReplyId && `reply_${editData.originalReplyId}` !== keyFound) api.pendingEdits.delete(`reply_${editData.originalReplyId}`);
-            for (const edit of editData.edits) {
-                const [newText, delayAmount] = edit;
-                await new Promise(resolve => setTimeout(resolve, delayAmount));
-                try {
-                    if (typeof api.editMessage === 'function') {
-                        await api.editMessage(newText, confirmedMessageID);
-                    } else {
-                        utils.error(`[handlePendingEdits] api.editMessage is not a function. Cannot execute edit.`);
-                    }
-                } catch (e) {
-                    utils.error(`[handlePendingEdits] Failed to execute edit for message ${confirmedMessageID}:`, e);
-                    break;
+            const { body, delay } = editData.edit;
+            if (delay) await new Promise(resolve => setTimeout(resolve, delay));
+            try {
+                if (typeof api.editMessage === 'function') {
+                    await api.editMessage(body, confirmedMessageID);
+                } else {
+                    utils.error(`[handlePendingEdits] api.editMessage is not a function. Cannot execute edit.`);
                 }
+            } catch (e) {
+                utils.error(`[handlePendingEdits] Failed to execute edit for message ${confirmedMessageID}:`, e);
             }
         }
     }
@@ -141,10 +130,19 @@ async function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
     };
 
     if (ctx.globalOptions.proxy) options.wsOptions.agent = new HttpsProxyAgent(ctx.globalOptions.proxy);
-
-    ctx.mqttClient = new mqtt.Client(_ => websocket(host, options.wsOptions), options);
-    const mqttClient = ctx.mqttClient;
-
+    const mqttClient = new mqtt.Client(_ => websocket(host, options.wsOptions), options);
+    mqttClient.publishSync = mqttClient.publish.bind(mqttClient);
+    mqttClient.publish = (topic, message, opts = {}, callback = () => {}) => new Promise((resolve, reject) => {
+            mqttClient.publishSync(topic, message, opts, (err, data) => {
+            if (err) {
+                callback(err);
+                reject(err);
+            }
+            callback(null, data);
+            resolve(data);
+        });
+    });
+    ctx.mqttClient = mqttClient;
     mqttClient.on('error', (err) => {
         utils.error("listenMqtt", err);
         mqttClient.end();
@@ -194,7 +192,11 @@ async function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
                 if (jsonMessage.deltas) {
                     for (const delta of jsonMessage.deltas) {
                         if (delta.class === "NewMessage") {
-                            handlePendingEdits(api, delta.messageMetadata, delta.messageMetadata.messageId, ctx);
+                            const otID = delta.messageMetadata.offlineThreadingId;
+                            const otIDdata = api.message.get(otID);
+                            if (!otIDdata){
+                                api.message.set(otID, delta);
+                            }
                         }
                         parseDelta(defaultFuncs, api, ctx, globalCallback, { delta });
                     }

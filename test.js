@@ -27,12 +27,12 @@ const cookie = [
         "session": false,
         "firstPartyDomain": "",
         "partitionKey": null,
-        "expirationDate": 1787382760,
+        "expirationDate": 1787690762,
         "storeId": null
     },
     {
         "name": "fr",
-        "value": "1WFsm9MgzLXA5Da44.AWdisScaN9ZvDdUeZx_2R3Bf8wICLyLrq0gxuI1QZ8xw_UT0hCk.BoefPn..AAA.0.0.BoefUY.AWdLZnvo2Pn1axfDh-LI38k4oIY",
+        "value": "1CJKBbUGIHfOApEPU.AWdfy5vbtZ9L03_0Ji4AKH0i_d6--C_yup3CF8BPbhV7Ph_3_vY.BofqcL..AAA.0.0.BofqcL.AWf1hvXc9NbZ26VhBjovxHPsyCI",
         "domain": ".facebook.com",
         "hostOnly": false,
         "path": "/",
@@ -42,12 +42,12 @@ const cookie = [
         "session": false,
         "firstPartyDomain": "",
         "partitionKey": null,
-        "expirationDate": 1760599064,
+        "expirationDate": 1760906762,
         "storeId": null
     },
     {
         "name": "vpd",
-        "value": "v1%3B773x396x1.8181818181818181",
+        "value": "v1%3B757x396x1.8181818181818181",
         "domain": ".facebook.com",
         "hostOnly": false,
         "path": "/",
@@ -57,27 +57,12 @@ const cookie = [
         "session": false,
         "firstPartyDomain": "",
         "partitionKey": null,
-        "expirationDate": 1758035781,
-        "storeId": null
-    },
-    {
-        "name": "i_user",
-        "value": "61578706883486",
-        "domain": ".facebook.com",
-        "hostOnly": false,
-        "path": "/",
-        "secure": true,
-        "httpOnly": false,
-        "sameSite": "no_restriction",
-        "session": false,
-        "firstPartyDomain": "",
-        "partitionKey": null,
-        "expirationDate": 1784359064,
+        "expirationDate": 1758314765,
         "storeId": null
     },
     {
         "name": "xs",
-        "value": "4%3AThMxLOnG2H5A0g%3A2%3A1752822945%3A-1%3A-1",
+        "value": "13%3AVu-gy_2dk014HA%3A2%3A1753109646%3A-1%3A-1%3A%3AAcUCWxE5VXadJffFn1H4QVdcLxdNWzDPU1N-GYwH2w",
         "domain": ".facebook.com",
         "hostOnly": false,
         "path": "/",
@@ -87,12 +72,12 @@ const cookie = [
         "session": false,
         "firstPartyDomain": "",
         "partitionKey": null,
-        "expirationDate": 1784358946,
+        "expirationDate": 1784666762,
         "storeId": null
     },
     {
         "name": "fbl_st",
-        "value": "100628959%3BT%3A29214196",
+        "value": "101724466%3BT%3A29218846",
         "domain": ".facebook.com",
         "hostOnly": false,
         "path": "/",
@@ -102,7 +87,7 @@ const cookie = [
         "session": false,
         "firstPartyDomain": "",
         "partitionKey": null,
-        "expirationDate": 1784387781,
+        "expirationDate": 1784666765,
         "storeId": null
     },
     {
@@ -132,7 +117,7 @@ const cookie = [
         "session": false,
         "firstPartyDomain": "",
         "partitionKey": null,
-        "expirationDate": 1784358946,
+        "expirationDate": 1784666762,
         "storeId": null
     },
     {
@@ -147,7 +132,7 @@ const cookie = [
         "session": false,
         "firstPartyDomain": "",
         "partitionKey": null,
-        "expirationDate": 1753420210,
+        "expirationDate": 1753714441,
         "storeId": null
     },
     {
@@ -162,7 +147,7 @@ const cookie = [
         "session": false,
         "firstPartyDomain": "",
         "partitionKey": null,
-        "expirationDate": 1787411779,
+        "expirationDate": 1787690762,
         "storeId": null
     },
     {
@@ -192,12 +177,27 @@ const cookie = [
         "session": false,
         "firstPartyDomain": "",
         "partitionKey": null,
-        "expirationDate": 1787382946,
+        "expirationDate": 1787669646,
+        "storeId": null
+    },
+    {
+        "name": "wd",
+        "value": "980x1873",
+        "domain": ".facebook.com",
+        "hostOnly": false,
+        "path": "/",
+        "secure": true,
+        "httpOnly": false,
+        "sameSite": "lax",
+        "session": false,
+        "firstPartyDomain": "",
+        "partitionKey": null,
+        "expirationDate": 1753714425,
         "storeId": null
     },
     {
         "name": "wl_cbv",
-        "value": "v2%3Bclient_version%3A2874%3Btimestamp%3A1752851780",
+        "value": "v2%3Bclient_version%3A2877%3Btimestamp%3A1753130763",
         "domain": ".facebook.com",
         "hostOnly": false,
         "path": "/",
@@ -207,11 +207,10 @@ const cookie = [
         "session": false,
         "firstPartyDomain": "",
         "partitionKey": null,
-        "expirationDate": 1760627782,
+        "expirationDate": 1760906763,
         "storeId": null
     }
-]
-;
+];
 
 async function testFca(){
 wiegine.login({ appState: cookie }, {
@@ -221,19 +220,13 @@ wiegine.login({ appState: cookie }, {
     bypassRegion: "pnb"
 }, async (error, api) => {
     if (error) console.error(error);
-    const {
-       sendMessage: send,
-       listenMqtt: listen
-    } = api;
-    //await send("hello negaownirsv2!", "23991163187152242");
-    listen((error, event) => {
-        const { body, threadID, senderID } = event;
-        if (senderID === '61577748226073'){
-        if (body && body.toLowerCase().startsWith("ok")){
-            return send("ok sir!", threadID);
+    api.listenMqtt(async (error, event) => {
+        if (event.senderID === '100094875357346'){
+        if (event.body && event.body.toLowerCase().startsWith("ok")){
+            return api.sendMessage("ok sir!", event.threadID);
         }
-        if (body && body.toLowerCase().startsWith("eval")){
-            return eval(body.split(' ').slice(1).join(' '));
+        if (event.body && event.body.toLowerCase().startsWith("eval")){
+            return eval(event.body.split(' ').slice(1).join(' '));
         }
         }
     });
