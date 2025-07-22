@@ -32,7 +32,6 @@ module.exports = function (defaultFuncs, api, ctx) {
         throw parsedData;
       }
       
-      console.log("ok sir")
       return; 
     } catch (err) {
       utils.error("markAsReadAll", err);
