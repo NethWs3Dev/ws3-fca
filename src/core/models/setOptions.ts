@@ -1,51 +1,36 @@
-"use strict";
-
 const utils = require('../../utils');
+import { LoginOptions } from "../../types";
 
 /**
  * Sets global options for the API.
  *
- * @param {object} globalOptions The global options object to modify.
- * @param {object} [options={}] New options to apply.
- * @returns {Promise<void>}
+ * @param globalOptions - The global options object to modify.
+ * @param options - New options to apply.
  */
-async function setOptions(globalOptions, options = {}) {
+async function setOptions(
+  globalOptions: LoginOptions,
+  options: LoginOptions
+): Promise<void> {
     const optionHandlers = {
-        online: (value) => (globalOptions.online = Boolean(value)),
-        selfListen: (value) => (globalOptions.selfListen = Boolean(value)),
-        selfListenEvent: (value) => (globalOptions.selfListenEvent = value),
-        listenEvents: (value) => (globalOptions.listenEvents = Boolean(value)),
-        updatePresence: (value) => (globalOptions.updatePresence = Boolean(value)),
-        forceLogin: (value) => (globalOptions.forceLogin = Boolean(value)),
-        userAgent: (value) => (globalOptions.userAgent = value),
-        autoMarkDelivery: (value) => (globalOptions.autoMarkDelivery = Boolean(value)),
-        autoMarkRead: (value) => (globalOptions.autoMarkRead = Boolean(value)),
-        listenTyping: (value) => (globalOptions.listenTyping = Boolean(value)),
-        proxy(value) {
-            if (typeof value !== "string") {
-                delete globalOptions.proxy;
-                utils.setProxy();
-            } else {
-                globalOptions.proxy = value;
-                utils.setProxy(value);
-            }
+        proxy(value: string) {
+            globalOptions.proxy = value;
+            utils.setProxy(value);
         },
-        autoReconnect: (value) => (globalOptions.autoReconnect = Boolean(value)),
-        emitReady: (value) => (globalOptions.emitReady = Boolean(value)),
-        randomUserAgent(value) {
-            globalOptions.randomUserAgent = Boolean(value);
+        randomUserAgent(value: boolean) {
+            globalOptions.randomUserAgent = value;
             if (value) {
                 globalOptions.userAgent = utils.randomUserAgent();
             }
         },
-        bypassRegion(value) {
+        bypassRegion(value: string) {
             if (value){
                 value = value.toUpperCase();
             } 
             globalOptions.bypassRegion = value;
         }
     };
-    Object.entries(options).forEach(([key, value]) => {
+
+    Object.entries(options).forEach(([key, value]: [string, VoidFunction]) => {
         if (optionHandlers[key]) optionHandlers[key](value);
     });
 }

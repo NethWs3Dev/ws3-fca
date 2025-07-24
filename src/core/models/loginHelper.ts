@@ -1,17 +1,16 @@
-"use strict";
-
 const utils = require('../../utils');
 const axios = require("axios");
 const path = require('path');
 const fs = require('fs');
 const qs = require("querystring");
+import { LoginOptions, LoginCredentials } from "../../types";
 
 /**
  * The main login helper function, orchestrating the login process.
  *
- * @param {object} credentials User credentials or appState.
- * @param {object} globalOptions Global options for the API.
- * @param {function} callback The final callback function.
+ * @param credentials - User credentials or appState.
+ * @param globalOptions - Global options for the API.
+ * @param callback - The final callback function.
  * @param {function} setOptionsFunc Reference to the setOptions function from models.
  * @param {function} buildAPIFunc Reference to the buildAPI function from models.
  * @param {object} initialApi The initial API object to extend.
@@ -19,7 +18,16 @@ const qs = require("querystring");
  * @param {string} errorRetrievingMsg The error message for retrieving user ID.
  * @returns {Promise<void>}
  */
-async function loginHelper(credentials, globalOptions, callback, setOptionsFunc, buildAPIFunc, initialApi, fbLinkFunc, errorRetrievingMsg) {
+async function loginHelper(
+  credentials: LoginCredentials, 
+  globalOptions: LoginOptions, 
+  callback: VoidFunction, 
+  setOptionsFunc, 
+  buildAPIFunc, 
+  initialApi, 
+  fbLinkFunc, 
+  errorRetrievingMsg
+) {
     let ctx = null;
     let defaultFuncs = null;
     let api = initialApi;

@@ -1,5 +1,3 @@
-"use strict";
-
 const utils = require("../utils");
 const setOptionsModel = require('./models/setOptions');
 const buildAPIModel = require('./models/buildAPI');
