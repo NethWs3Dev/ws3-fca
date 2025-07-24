@@ -26,6 +26,9 @@ async function login(credentials, options, callback) {
         callback = options;
         options = {};
     }
+    if ('logging' in options) {
+        utils.logOptions(options.logging);
+    }
     const defaultOptions = {
         selfListen: false,
         listenEvents: true,

@@ -237,17 +237,25 @@ function getType(obj) {
 }
 
 // Logs
+let logging = true;
+function logOptions(bool) {
+  logging = bool;
+}
 function log(...args) {
+  if (logging === false) return;
   console.log(ws, chalk.green.bold("[LOG]"), ...args);
 }
 function error(...args) {
+  if (logging === false) return;
   console.error(ws, chalk.red.bold("[ERROR]"), ...args);
 }
 function warn(...args) {
+  if (logging === false) return;
   console.warn(ws, chalk.yellow.bold("[WARNING]"), ...args);
 }
 
 module.exports = {
+  logOptions,
   log,
   error,
   warn,
