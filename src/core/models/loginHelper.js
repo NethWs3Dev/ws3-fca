@@ -1,8 +1,10 @@
 "use strict";
 
 const utils = require('../../utils');
+const axios = require("axios");
 const path = require('path');
 const fs = require('fs');
+const qs = require("querystring");
 
 /**
  * The main login helper function, orchestrating the login process.
@@ -26,7 +28,7 @@ async function loginHelper(credentials, globalOptions, callback, setOptionsFunc,
         const jar = utils.getJar();
         utils.log("Logging in...");
 
-        const appState = credentials.appState || credentials;
+        const appState = credentials.appState;
 
         if (appState) {
             let cookieStrings = [];
@@ -44,8 +46,38 @@ async function loginHelper(credentials, globalOptions, callback, setOptionsFunc,
                 const str = `${cookieString}; expires=${expires}; domain=${domain}; path=/;`;
                 jar.setCookie(str, `https://${domain}`);
             });
+        } else if (credentials.email && credentials.password) {
+            // Rui
+            const url = "https://api.facebook.com/method/auth.login";
+            const params = {
+                access_token: "350685531728|62f8ce9f74b12f84c123cc23437a4a32",
+                format: "json",
+                sdk_version: 2,
+                email: credentials.email,
+                locale: "en_US",
+                password: credentials.password,
+                generate_session_cookies: 1,
+                sig: "c1c640010993db92e5afd11634ced864",
+            }
+            const query = qs.stringify(params);
+            const xurl = `${url}?${query}`;
+            try {
+                const resp = await axios.get(xurl);
+                if (resp.status !== 200) {
+                    throw new Error("Wrong password / email");
+                }
+                let cstrs = resp.data["session_cookies"].map(c => `${c.name}=${c.value}`);
+                cstrs.forEach(cstr => {
+                  const domain = ".facebook.com";
+                  const expires = new Date().getTime() + 1000 * 60 * 60 *24 * 365;
+                  const str = `${cstr}; expires=${expires}; domain=${domain}; path=/;`;
+                  jar.setCookie(str, `https://${domain}`);
+                });
+            } catch (e) {
+                throw new Error("Wrong password / email");
+            }
         } else {
-                throw new Error("No cookie found. Please provide an appState.");
+                throw new Error("No cookie or credentials found. Please provide cookies or credentials.");
         }
 
         if (!api) {
