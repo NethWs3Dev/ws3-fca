@@ -4,8 +4,9 @@ const utils = require("../utils");
 const setOptionsModel = require('./models/setOptions');
 const buildAPIModel = require('./models/buildAPI');
 const loginHelperModel = require('./models/loginHelper');
+import { LoginOptions, LoginCredentials } from '../types';
 
-let globalOptions = {};
+let globalOptions: LoginOptions = {};
 let ctx = null;
 let defaultFuncs = null;
 let api = null;
@@ -16,12 +17,15 @@ const ERROR_RETRIEVING = "Error retrieving userID. This can be caused by many fa
 /**
  * Initiates the login process for a Facebook account.
  *
- * @param {object} credentials The user's login credentials (e.g., email/password or appState cookies).
- * @param {object} [options={}] Optional login configurations.
- * @param {function} callback The callback function to be invoked upon login completion.
- * @returns {Promise<void>}
+ * @param credentials - The user's login credentials (e.g., email/password or appState cookies).
+ * @param options - Optional login configurations.
+ * @param callback - The callback function to be invoked upon login completion.
  */
-async function login(credentials, options, callback) {
+async function login(
+  credentials: LoginCredentials,
+  options: LoginOptions,
+  callback: () => void,
+): Promise<void> {
     if (typeof options === "function") {
         callback = options;
         options = {};

@@ -6,7 +6,8 @@
   "description": "A node.js package for automating Facebook Messenger bot, and is one of the most advanced next-generation Facebook Chat API (FCA) by @NethWs3Dev & @ExocoreCommunity",
   "main": "module/index",
   "scripts": {
-    "test": "echo Wildan Suldyir"
+    "docs": "typedoc src",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -15,7 +16,8 @@
   "author": "NethWs3Dev",
   "contributors": [
     "Choru Official (Johnsteve Costaños)",
-    "Jonell Magallanes"
+    "Jonell Magallanes",
+    "Rui Reogo"
   ],
   "community": "Exocore",
   "license": "MIT",
@@ -51,8 +53,7 @@
     "node-cron": "^3.0.3",
     "tough-cookie": "^5.1.2",
     "undici": "^5.29.0",
-    "websocket-stream": "^5.5.0",
-    "jsonpath-plus": "^10.3.0"
+    "websocket-stream": "^5.5.0"
   },
   "devDependencies": {
     "@types/axios": "^0.9.36",
@@ -60,11 +61,8 @@
     "@types/form-data": "^2.2.1",
     "@types/node": "^22.13.11",
     "@types/tough-cookie": "^4.0.5",
-    "eslint": "^7.5.0",
-    "mocha": "^7.0.1",
-    "prettier": "^1.11.1",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.4.5"
+    "typedoc": "^0.28.7",
+    "typescript": "^5.8.3"
   },
   "engines": {
     "node": ">=22.x"
