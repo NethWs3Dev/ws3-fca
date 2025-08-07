@@ -1,69 +1,50 @@
-"use strict";
-
-const utils = require('../../../utils');
-
-module.exports = (defaultFuncs, api, ctx) => {
+// Fixed By @NAUGHTY-BRAND
   /**
    * Unsends a message.
-   * Made by ChoruOfficial 
    * Mqtt
    * @param {string} messageID The ID of the message to unsend.
-   * @param {string} threadID The ID of the thread where the message is.
-   * @param {Function} [callback] Optional callback function.
+   * @param {Function} [cb] Optional callback function.
    * @returns {Promise<object>} A promise that resolves with information about the unsend action.
    */
+"use strict";
+const utils = require('../../../utils');
+
+module.exports = function (defaultFuncs, api, ctx) {
   
-   //Modified by Neth
-   //iloveyou wiegine
-   
-  return async (messageID, threadID) => {
+  function unsendMessage(messageID, cb) {
+    let Func1 = function () {};
+    let Func2 = function () {};
     
-    if (!messageID) {
-        return _callback(new Error("messageID is required."));
-    }
-    if (!threadID) {
-         return _callback(new Error("threadID is required."));
-    }
-    if (!ctx.mqttClient) {
-        return _callback(new Error("Not connected to MQTT"));
-    }
+    const rPromise = new Promise(function (_1, _2) {
+      Func1 = _1;
+      Func2 = _2;
+    });
 
-    ctx.wsReqNumber = (ctx.wsReqNumber || 0) + 1;
-    ctx.wsTaskNumber = (ctx.wsTaskNumber || 0) + 1;
-
-    const queryPayload = {
-      message_id: messageID,
-      thread_key: parseInt(threadID),
-      sync_group: 1
-    };
-
-    const query = {
-      failure_count: null,
-      label: "33", 
-      payload: JSON.stringify(queryPayload),
-      queue_name: "unsend_message",
-      task_id: ctx.wsTaskNumber
-    };
-    const context = {
-      app_id: ctx.appID,
-      payload: {
-        epoch_id: parseInt(utils.generateOfflineThreadingID()),
-        tasks: [query],
-        version_id: "24631415369801570"
-      },
-      request_id: ctx.wsReqNumber,
-      type: 3
-    };
-    context.payload = JSON.stringify(context.payload);
-    const data = await ctx.mqttClient.publish('/ls_req', JSON.stringify(context), { qos: 1, retain: false });
-    return {
-        ...(data && { ...data }),
-        type: "unsend_message",
-        threadID: threadID,
-        messageID: messageID, 
-        senderID: ctx.userID,
-        BotID: ctx.userID,
-        timestamp: Date.now(),
+    if (!cb) {
+      cb = function (err, result) {
+        if (err) return Func2(err);
+        Func1(result);
       };
-  };
+    }
+
+    const f = {
+      message_id: messageID
+    };
+
+    defaultFuncs
+      .post("https://www.facebook.com/messaging/unsend_message/", ctx.jar, f)
+      .then(utils.parseAndCheckLogin(ctx, defaultFuncs))
+      .then(function (res) {
+        if (res.error) throw res;
+        return cb();
+      })
+      .catch(function (err) {
+        console.log("unsendMessage", err);
+        return cb(err);
+      });
+
+    return rPromise;
+  }
+
+  return unsendMessage;
 };
