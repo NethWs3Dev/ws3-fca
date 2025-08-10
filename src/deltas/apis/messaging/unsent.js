@@ -4,28 +4,21 @@ const utils = require('../../../utils');
 
 module.exports = (defaultFuncs, api, ctx) => {
   /**
-   * Unsends a message.
-   * Made by ChoruOfficial 
-   * Mqtt
+   * Unsends a message using the MQTT connection.
    * @param {string} messageID The ID of the message to unsend.
-   * @param {string} threadID The ID of the thread where the message is.
-   * @param {Function} [callback] Optional callback function.
-   * @returns {Promise<object>} A promise that resolves with information about the unsend action.
+   * @param {string} threadID The ID of the thread where the message is located.
+   * @returns {Promise<object>} A promise that resolves with a confirmation object.
+   * @throws {Error} If messageID, threadID are missing, or if not connected to MQTT.
    */
-  
-   //Modified by Neth
-   //iloveyou wiegine
-   
   return async (messageID, threadID) => {
-    
     if (!messageID) {
-        return _callback(new Error("messageID is required."));
+      throw new Error("A 'messageID' is required to unsend a message.");
     }
     if (!threadID) {
-         return _callback(new Error("threadID is required."));
+      throw new Error("A 'threadID' is required to unsend a message.");
     }
     if (!ctx.mqttClient) {
-        return _callback(new Error("Not connected to MQTT"));
+      throw new Error("Not connected to MQTT. Please reconnect.");
     }
 
     ctx.wsReqNumber = (ctx.wsReqNumber || 0) + 1;
@@ -33,37 +26,39 @@ module.exports = (defaultFuncs, api, ctx) => {
 
     const queryPayload = {
       message_id: messageID,
-      thread_key: parseInt(threadID),
+      thread_key: parseInt(threadID), // The API expects the threadID as an integer
       sync_group: 1
     };
 
-    const query = {
+    const task = {
       failure_count: null,
       label: "33", 
       payload: JSON.stringify(queryPayload),
       queue_name: "unsend_message",
       task_id: ctx.wsTaskNumber
     };
+
+    const payload = {
+      app_id: ctx.appID, 
+      epoch_id: parseInt(utils.generateOfflineThreadingID()),
+      tasks: [task],
+      version_id: "31324585827132504"
+    };
+    
     const context = {
-      app_id: ctx.appID,
-      payload: {
-        epoch_id: parseInt(utils.generateOfflineThreadingID()),
-        tasks: [query],
-        version_id: "24631415369801570"
-      },
+      payload: JSON.stringify(payload),
       request_id: ctx.wsReqNumber,
       type: 3
     };
-    context.payload = JSON.stringify(context.payload);
-    const data = await ctx.mqttClient.publish('/ls_req', JSON.stringify(context), { qos: 1, retain: false });
+
+     await ctx.mqttClient.publish('/ls_req', JSON.stringify(context), { qos: 1, retain: false });
+
     return {
-        ...(data && { ...data }),
-        type: "unsend_message",
-        threadID: threadID,
-        messageID: messageID, 
-        senderID: ctx.userID,
-        BotID: ctx.userID,
-        timestamp: Date.now(),
-      };
+      type: "unsend_message_response",
+      threadID: threadID,
+      messageID: messageID,
+      senderID: ctx.userID,
+      timestamp: Date.now()
+    };
   };
 };
