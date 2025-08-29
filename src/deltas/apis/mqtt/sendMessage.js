@@ -88,7 +88,6 @@ module.exports = (defaultFuncs, api, ctx) => {
     }
 
     const otid = utils.generateOfflineThreadingID();
-    console.log(otid);
     
     const tasks = [{
       label: "46",
@@ -162,10 +161,9 @@ module.exports = (defaultFuncs, api, ctx) => {
       task.payload = JSON.stringify(task.payload);
     });
     form.payload = JSON.stringify(form.payload);
-    const data = await ctx.mqttClient.publish("/ls_req", JSON.stringify(form));
+    ctx.mqttClient.publish("/ls_req", JSON.stringify(form));
     const deltaResponse = await waitForDelta();
     return {
-        ...(data && { ...data }),
         form,
         threadID,
         type: replyToMessage ? "message_reply" : "message",
