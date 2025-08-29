@@ -33,7 +33,7 @@ module.exports = function (defaultFuncs, api, ctx) {
 
         const queryPayload = {
             message_id: messageID,
-            text: text
+            text
         };
 
         const query = {

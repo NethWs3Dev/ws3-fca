@@ -1,9 +1,8 @@
 # 🚘 ws3-fca
 
 ![Image](wiegine.png)
-# Fully Mqtt
-### Remodified by Johnsteve Costaños
-**ws3-fca** is a fully refactored Facebook Chat API (FCA) client built for **reliable**, **real-time**, and **modular** interaction with Facebook Messenger. Designed with modern bot development in mind, it offers full control over Messenger automation through a clean, stable interface.
+
+💁 **ws3-fca** is a fully refactored Facebook Chat API (FCA) client built for **reliable**, **real-time**, and **modular** interaction with Facebook Messenger. Designed with modern bot development in mind, it offers full control over Messenger automation through a clean, stable interface.
 
 ---
 
@@ -14,7 +13,7 @@ Full documentation and advanced examples:
 
 If you encounter issues or want to give feedback, feel free to message us via Facebook:
 
-* [@Kenneth Aceberos](https://www.facebook.com/Neth.Aceb07/)
+* [@Kenneth Aceberos](https://www.facebook.com/Neth.Ace.7/)
 * [@Johnsteve Costaños](https://www.facebook.com/johnstevecostanos2025/)
 * [@Jonell Magallanes 󱢏](https://www.facebook.com/ccprojectsjonell10/)
 
@@ -72,7 +71,7 @@ If you encounter issues or want to give feedback, feel free to message us via Fa
 > Requires **Node.js v20+**
 
 ```bash
-npm install ws3-fca
+npm i ws3-fca@latest
 ```
 
 ---
@@ -127,14 +126,14 @@ login(credentials, {
   console.log(`✅ Logged in as: ${api.getCurrentUserID()}`);
 
   const commandsDir = path.join(__dirname, "modules", "commands");
-  api.commands = new Map();
+  const commands = new Map();
 
   if (!fs.existsSync(commandsDir)) fs.mkdirSync(commandsDir, { recursive: true });
 
   for (const file of fs.readdirSync(commandsDir).filter(f => f.endsWith(".js"))) {
     const command = require(path.join(commandsDir, file));
     if (command.name && typeof command.execute === "function") {
-      api.commands.set(command.name, command);
+      commands.set(command.name, command);
       console.log(`🔧 Loaded command: ${command.name}`);
     }
   }
@@ -148,7 +147,7 @@ login(credentials, {
     const args = event.body.slice(prefix.length).trim().split(/ +/);
     const commandName = args.shift().toLowerCase();
 
-    const command = api.commands.get(commandName);
+    const command = commands.get(commandName);
     if (!command) return;
 
     try {

@@ -21,8 +21,8 @@ module.exports = (defaultFuncs, api, ctx) => {
       throw new Error("Not connected to MQTT. Please reconnect.");
     }
 
-    ctx.wsReqNumber = (ctx.wsReqNumber || 0) + 1;
-    ctx.wsTaskNumber = (ctx.wsTaskNumber || 0) + 1;
+    ctx.wsReqNumber += 1;
+    ctx.wsTaskNumber += 1;
 
     const queryPayload = {
       message_id: messageID,
@@ -50,9 +50,8 @@ module.exports = (defaultFuncs, api, ctx) => {
       request_id: ctx.wsReqNumber,
       type: 3
     };
-
-     await ctx.mqttClient.publish('/ls_req', JSON.stringify(context), { qos: 1, retain: false });
-
+    
+    ctx.mqttClient.publish('/ls_req', JSON.stringify(context), { qos: 1, retain: false });
     return {
       type: "unsend_message_response",
       threadID: threadID,
