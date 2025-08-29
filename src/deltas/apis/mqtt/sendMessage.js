@@ -77,6 +77,7 @@ module.exports = (defaultFuncs, api, ctx) => {
    * @param {string} threadID The ID of the thread.
    * @param {string} [replyToMessage] The ID of the message to reply to.
    */
+  
   return async (msg, threadID, replyToMessage, callback) => {
     if (typeof msg !== 'string' && typeof msg !== 'object') {
       throw new Error("Message should be of type string or object, not " + utils.getType(msg) + ".");
@@ -87,7 +88,8 @@ module.exports = (defaultFuncs, api, ctx) => {
     }
 
     const otid = utils.generateOfflineThreadingID();
-
+    console.log(otid);
+    
     const tasks = [{
       label: "46",
       payload: getSendPayload(threadID, msg, otid),
@@ -128,13 +130,13 @@ module.exports = (defaultFuncs, api, ctx) => {
     const waitForDelta = async (timeout = 60*1000, interval = 500) => {
         const startTime = Date.now();
         while (Date.now() - startTime < timeout) {
-            const delta = api.message.get(otid);
+            const delta = api.message[otid];
             if (delta){
                 return delta;
             }
             await new Promise(res => setTimeout(res, interval));
        }
-       api.message.delete(otid);
+       delete api.message[otid];
        return;
     }
     

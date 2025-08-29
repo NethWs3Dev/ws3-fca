@@ -91,7 +91,7 @@ async function loginHelper(credentials, globalOptions, callback, setOptionsFunc,
                 },
             };
             api.pendingEdits = new Map();
-            api.message = new Map();
+            api.message = {};
         }
 
         const resp = await utils.get(fbLinkFunc(), jar, null, globalOptions, { noRef: true }).then(utils.saveCookies(jar));

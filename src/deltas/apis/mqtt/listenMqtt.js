@@ -193,10 +193,7 @@ async function listenMqtt(defaultFuncs, api, ctx, globalCallback) {
                     for (const delta of jsonMessage.deltas) {
                         if (delta.class === "NewMessage") {
                             const otID = delta.messageMetadata.offlineThreadingId;
-                            const otIDdata = api.message.get(otID);
-                            if (!otIDdata){
-                                api.message.set(otID, delta);
-                            }
+                            api.message[otID] = delta;
                         }
                         parseDelta(defaultFuncs, api, ctx, globalCallback, { delta });
                     }
