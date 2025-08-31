@@ -49,6 +49,7 @@ function parseDelta(defaultFuncs, api, ctx, globalCallback, v) {
     if (clientPayload && clientPayload.deltas) {
       for (var i in clientPayload.deltas) {
         var delta = clientPayload.deltas[i];
+       // console.log(delta);
         if (delta.deltaMessageReaction && !!ctx.globalOptions.listenEvents) {
             globalCallback(null, {
               type: "message_reaction",

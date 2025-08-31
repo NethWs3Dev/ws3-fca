@@ -1,6 +1,6 @@
 {
   "name": "ws3-fca",
-  "version": "3.5.1",
+  "version": "3.5.2",
   "module": "commonjs",
   "types": "src/types/index.d.ts",
   "description": "A node.js package for automating Facebook Messenger bot, and is one of the most advanced next-generation Facebook Chat API (FCA) by @NethWs3Dev & @ExocoreCommunity",
@@ -51,8 +51,7 @@
     "node-cron": "^3.0.3",
     "tough-cookie": "^5.1.2",
     "undici": "^5.29.0",
-    "websocket-stream": "^5.5.0",
-    "jsonpath-plus": "^10.3.0"
+    "websocket-stream": "^5.5.0"
   },
   "devDependencies": {
     "@types/axios": "^0.9.36",

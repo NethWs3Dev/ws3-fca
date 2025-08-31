@@ -1,63 +1,17 @@
 "use strict";
 
 const utils = require('../../../utils');
+// @NethWs3Dev
 
-module.exports = (defaultFuncs, api, ctx) => {
-  /**
-   * Unsends a message using the MQTT connection.
-   * @param {string} messageID The ID of the message to unsend.
-   * @param {string} threadID The ID of the thread where the message is located.
-   * @returns {Promise<object>} A promise that resolves with a confirmation object.
-   * @throws {Error} If messageID, threadID are missing, or if not connected to MQTT.
-   */
-  return async (messageID, threadID) => {
-    if (!messageID) {
-      throw new Error("A 'messageID' is required to unsend a message.");
+module.exports = function (defaultFuncs, api, ctx) {
+  return async (messageID) => {
+    const defData = await defaultFuncs.post("https://www.facebook.com/messaging/unsend_message/", ctx.jar, {
+      message_id: messageID
+    })
+    const resData = await utils.parseAndCheckLogin(ctx, defaultFuncs)(defData);
+    if (resData.error) {
+      throw new Error(resData);
     }
-    if (!threadID) {
-      throw new Error("A 'threadID' is required to unsend a message.");
-    }
-    if (!ctx.mqttClient) {
-      throw new Error("Not connected to MQTT. Please reconnect.");
-    }
-
-    ctx.wsReqNumber += 1;
-    ctx.wsTaskNumber += 1;
-
-    const queryPayload = {
-      message_id: messageID,
-      thread_key: parseInt(threadID), // The API expects the threadID as an integer
-      sync_group: 1
-    };
-
-    const task = {
-      failure_count: null,
-      label: "33", 
-      payload: JSON.stringify(queryPayload),
-      queue_name: "unsend_message",
-      task_id: ctx.wsTaskNumber
-    };
-
-    const payload = {
-      app_id: ctx.appID, 
-      epoch_id: parseInt(utils.generateOfflineThreadingID()),
-      tasks: [task],
-      version_id: "31324585827132504"
-    };
-    
-    const context = {
-      payload: JSON.stringify(payload),
-      request_id: ctx.wsReqNumber,
-      type: 3
-    };
-    
-    ctx.mqttClient.publish('/ls_req', JSON.stringify(context), { qos: 1, retain: false });
-    return {
-      type: "unsend_message_response",
-      threadID: threadID,
-      messageID: messageID,
-      senderID: ctx.userID,
-      timestamp: Date.now()
-    };
+    return resData;
   };
 };

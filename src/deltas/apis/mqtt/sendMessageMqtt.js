@@ -1,9 +1,7 @@
 "use strict";
 
 const utils = require('../../../utils');
-
-//Modified by Neth
-//iloveyou wiegine
+const delay = async ms => await new Promise(res => setTimeout(res, ms));
 
 module.exports = (defaultFuncs, api, ctx) => {
   /**
@@ -43,9 +41,10 @@ module.exports = (defaultFuncs, api, ctx) => {
   function getSendPayload(threadID, msg, otid) {
     const isString = typeof msg === 'string';
     const body = isString ? msg : msg.body || "";
+    otid = otid.toString() || utils.generateOfflineThreadingID().toString();
     let payload = {
       thread_id: threadID.toString(),
-      otid: otid.toString(),
+      otid,
       source: 0,
       send_type: 1,
       sync_group: 1,
@@ -79,6 +78,7 @@ module.exports = (defaultFuncs, api, ctx) => {
    */
   
   return async (msg, threadID, replyToMessage, callback) => {
+      
     if (typeof msg !== 'string' && typeof msg !== 'object') {
       throw new Error("Message should be of type string or object, not " + utils.getType(msg) + ".");
     }
@@ -87,11 +87,37 @@ module.exports = (defaultFuncs, api, ctx) => {
       throw new Error("threadID must be a string or number.");
     }
 
-    const otid = utils.generateOfflineThreadingID();
+    if (!callback && typeof threadID === "function") {
+      throw new Error("Pass a threadID as a second argument.");
+    }
     
+    if (!callback && typeof replyToMessage === "function") {
+      callback = replyToMessage;
+      replyToMessage = null;
+    }
+
+    let resolveFunc = () => {};
+    let rejectFunc = () => {};
+    let returnPromise = new Promise((resolve, reject) => {
+      resolveFunc = resolve;
+      rejectFunc = reject;
+    });
+
+    if (!callback) {
+      callback = (err, data) => {
+        if (err) return rejectFunc(err);
+        resolveFunc(data);
+      };
+    }
+    
+    const timestamp = Date.now();
+    const otid = utils.generateOfflineThreadingID();
+    const epoch_id = utils.generateOfflineThreadingID();
+    const payload = getSendPayload(threadID, msg, otid);
+        
     const tasks = [{
       label: "46",
-      payload: getSendPayload(threadID, msg, otid),
+      payload,
       queue_name: threadID.toString(),
       task_id: 0,
       failure_count: null,
@@ -99,7 +125,7 @@ module.exports = (defaultFuncs, api, ctx) => {
       label: "21",
       payload: {
         thread_id: threadID.toString(),
-        last_read_watermark_ts: Date.now(),
+        last_read_watermark_ts: timestamp,
         sync_group: 1,
       },
       queue_name: threadID.toString(),
@@ -119,26 +145,14 @@ module.exports = (defaultFuncs, api, ctx) => {
       app_id: "2220391788200892",
       payload: {
         tasks,
-        epoch_id: utils.generateOfflineThreadingID(),
+        epoch_id,
         version_id: "6120284488008082",
         data_trace_id: null,
       },
       request_id: 1,
       type: 3,
     };
-    const waitForDelta = async (timeout = 60*1000, interval = 500) => {
-        const startTime = Date.now();
-        while (Date.now() - startTime < timeout) {
-            const delta = api.message[otid];
-            if (delta){
-                return delta;
-            }
-            await new Promise(res => setTimeout(res, interval));
-       }
-       delete api.message[otid];
-       return;
-    }
-    
+     
     if (msg.attachment) {
       try {
         const files = await new Promise((resolve, reject) => {
@@ -161,20 +175,14 @@ module.exports = (defaultFuncs, api, ctx) => {
       task.payload = JSON.stringify(task.payload);
     });
     form.payload = JSON.stringify(form.payload);
-    ctx.mqttClient.publish("/ls_req", JSON.stringify(form));
-    const deltaResponse = await waitForDelta();
-    return {
-        form,
+    await ctx.mqttClient.publish("/ls_req", JSON.stringify(form), {
+        qos: 1,
+        retain: false
+    });
+    callback(null, {
         threadID,
-        type: replyToMessage ? "message_reply" : "message",
-        ...(deltaResponse && {
-            body: deltaResponse.body,
-            attachments: deltaResponse.attachments,
-            ...(deltaResponse.messageMetadata && {
-                messageID: deltaResponse.messageMetadata.messageId,
-                offlineThreadingId: deltaResponse.messageMetadata.offlineThreadingId
-            })
-        })
-    }
+        type: replyToMessage ? "message_reply" : "message"
+    });
+    return returnPromise;
   };
 };

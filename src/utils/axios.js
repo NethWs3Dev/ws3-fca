@@ -121,7 +121,7 @@ function cleanGet(url) {
  * @param {object} customHeader
  * @returns {Promise<object>}
  */
-function get(url, reqJar, qs, options, ctx, customHeader) {
+async function get(url, reqJar, qs, options, ctx, customHeader) {
     const config = {
         headers: getHeaders(url, options, ctx, customHeader),
         timeout: 60000,
@@ -129,8 +129,7 @@ function get(url, reqJar, qs, options, ctx, customHeader) {
         ...proxyConfig,
         validateStatus: (status) => status >= 200 && status < 600,
     };
-    const fn = () => client.get(url, config);
-    return requestWithRetry(fn);
+    return requestWithRetry(async () => await client.get(url, config));
 }
 
 /**
@@ -143,7 +142,7 @@ function get(url, reqJar, qs, options, ctx, customHeader) {
  * @param {object} customHeader
  * @returns {Promise<object>}
  */
-function post(url, reqJar, form, options, ctx, customHeader) {
+async function post(url, reqJar, form, options, ctx, customHeader) {
     const headers = getHeaders(url, options, ctx, customHeader);
     let data = form;
     let contentType = headers['Content-Type'] || 'application/x-www-form-urlencoded';
@@ -174,8 +173,7 @@ function post(url, reqJar, form, options, ctx, customHeader) {
         ...proxyConfig,
         validateStatus: (status) => status >= 200 && status < 600,
     };
-    const fn = () => client.post(url, data, config);
-    return requestWithRetry(fn);
+    return requestWithRetry(async () => await client.post(url, data, config));
 }
 
 /**
@@ -188,7 +186,7 @@ function post(url, reqJar, form, options, ctx, customHeader) {
  * @param {object} ctx
  * @returns {Promise<object>}
  */
-function postFormData(url, reqJar, form, qs, options, ctx) {
+async function postFormData(url, reqJar, form, qs, options, ctx) {
     const formData = new FormData();
     for (const key in form) {
         if (form.hasOwnProperty(key)) {
@@ -205,8 +203,7 @@ function postFormData(url, reqJar, form, qs, options, ctx) {
         ...proxyConfig,
         validateStatus: (status) => status >= 200 && status < 600,
     };
-    const fn = () => client.post(url, formData, config);
-    return requestWithRetry(fn);
+    return requestWithRetry(async () => await client.post(url, formData, config));
 }
 
 module.exports = {
