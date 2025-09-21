@@ -134,11 +134,7 @@ module.exports = function (defaultFuncs, api, ctx) {
     };
 
     const form = {
-        av: ctx.userID,
-        __user: ctx.userID,
         __a: "1",
-        fb_dtsg: ctx.fb_dtsg,
-        jazoest: ctx.jazoest,
         fb_api_caller_class: "RelayModern",
         fb_api_req_friendly_name: "StoriesCreateMutation",
         variables: JSON.stringify(variables),
@@ -166,7 +162,7 @@ module.exports = function (defaultFuncs, api, ctx) {
      * @param {string} [backgroundName="blue"] The background to use (`orange`, `blue`, `green`, `modern`).
      * @returns {Promise<{success: boolean, storyID: string}>}
      */
-    create: create,
+    create,
     /**
      * Reacts to a story with a specific emoji.
      * @param {string} storyIdOrUrl The ID or full URL of the story to react to.

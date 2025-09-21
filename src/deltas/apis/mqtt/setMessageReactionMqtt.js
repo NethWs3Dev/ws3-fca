@@ -13,7 +13,7 @@ function isCallable(func) {
 }
 
 module.exports = function (defaultFuncs, api, ctx) {
-  return function setMessageReactionMqtt(reaction, messageID, threadID, callback) {
+  return function setMessageReactionMqtt(reaction, messageID, threadID) {
     if (!ctx.mqttClient) {
       throw new Error('Not connected to MQTT');
     }
@@ -25,7 +25,7 @@ module.exports = function (defaultFuncs, api, ctx) {
       thread_key: threadID,
       timestamp_ms: Date.now(),
       message_id: messageID,
-      reaction: reaction,
+      reaction,
       actor_id: ctx.userID,
       reaction_style: null,
       sync_group: 1,
@@ -37,7 +37,7 @@ module.exports = function (defaultFuncs, api, ctx) {
       label: '29',
       payload: JSON.stringify(taskPayload),
       queue_name: JSON.stringify(['reaction', messageID]),
-      task_id: ctx.wsTaskNumber,
+      task_id: ctx.wsTaskNumber
     };
 
     const content = {
@@ -52,9 +52,9 @@ module.exports = function (defaultFuncs, api, ctx) {
       type: 3,
     };
 
-    if (isCallable(callback)) {
+    /*if (isCallable(callback)) {
       ctx.reqCallbacks[ctx.wsReqNumber] = callback;
-    }
+    }*/
 
     ctx.mqttClient.publish('/ls_req', JSON.stringify(content), { qos: 1, retain: false });
   };

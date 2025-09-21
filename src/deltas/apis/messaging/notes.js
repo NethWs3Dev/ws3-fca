@@ -53,7 +53,7 @@ module.exports = function(defaultFuncs, api, ctx) {
    * @param {string} text The content of the note.
    * @param {notesCallback} callback A callback function that is executed after the request. It receives an error object (if any) and an object confirming the note's creation status.
    */
-  function createNote(text, callback) {
+  function createNote(text, privacy = "EVERYONE", callback) {
     if (typeof callback !== 'function') {
       callback = () => {};
     }
@@ -65,7 +65,7 @@ module.exports = function(defaultFuncs, api, ctx) {
         description: text,
         duration: 86400, // 24 hours in seconds
         note_type: "TEXT_NOTE",
-        privacy: "FRIENDS",
+        privacy,
         session_id: utils.getGUID(),
       },
     };

@@ -90,8 +90,6 @@ async function loginHelper(credentials, globalOptions, callback, setOptionsFunc,
                     return uniqueAppState.length > 0 ? uniqueAppState : appState;
                 },
             };
-            api.pendingEdits = new Map();
-            api.message = new Map();
         }
 
         const resp = await utils.get(fbLinkFunc(), jar, null, globalOptions, { noRef: true }).then(utils.saveCookies(jar));
@@ -114,7 +112,9 @@ async function loginHelper(credentials, globalOptions, callback, setOptionsFunc,
         const [newCtx, newDefaultFuncs] = await buildAPIFunc(resp.body, jar, netData, globalOptions, fbLinkFunc, errorRetrievingMsg);
         ctx = newCtx;
         defaultFuncs = newDefaultFuncs;
-
+        api.message = new Map();
+        api.timestamp = {};
+        
         /**
          * Loads API modules from the deltas/apis directory.
          *
@@ -157,7 +157,7 @@ async function loginHelper(credentials, globalOptions, callback, setOptionsFunc,
         api.ctx = ctx;
         api.defaultFuncs = defaultFuncs;
         api.globalOptions = globalOptions;
-
+        
         return callback(null, api);
     } catch (error) {
         utils.error("loginHelper", error.error || error);
