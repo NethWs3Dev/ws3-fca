@@ -13,8 +13,7 @@ Full documentation and advanced examples:
 
 If you encounter issues or want to give feedback, feel free to message us via Facebook:
 
-* [@Kenneth Aceberos](https://www.facebook.com/Neth.Ace.7/)
-* [@Johnsteve Costaños](https://www.facebook.com/johnstevecostanos2025/)
+* [@Kenneth Aceberos](https://www.facebook.com/ken.neth.aceberos.920735)
 * [@Jonell Magallanes 󱢏](https://www.facebook.com/ccprojectsjonell10/)
 
 ---
@@ -165,7 +164,6 @@ login(credentials, {
 ## 🙌 Credits
 
 * 🔧 **@NethWs3Dev (Kenneth Aceberos)** – Main developer, equal maintainer, feature and patch contributions.
-* 💧 **@ChoruOfficial** – Lead developer, refactor of original FCA code, Fully Setup Mqtt.
 * 🔮 **@CommunityExocore** – Foundational core design and architecture.
 
 > Copyright (c) 2015
