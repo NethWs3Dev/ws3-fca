@@ -1,7 +1,5 @@
 # 🚘 ws3-fca
 
-![Image](wiegine.png)
-
 💁 **ws3-fca** is a fully refactored Facebook Chat API (FCA) client built for **reliable**, **real-time**, and **modular** interaction with Facebook Messenger. Designed with modern bot development in mind, it offers full control over Messenger automation through a clean, stable interface.
 
 ---
